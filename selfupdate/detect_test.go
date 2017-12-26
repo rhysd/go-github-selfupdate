@@ -3,6 +3,7 @@ package selfupdate
 import (
 	"github.com/blang/semver"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -15,15 +16,21 @@ func TestGitHubTokenEnv(t *testing.T) {
 }
 
 func TestDetectReleaseWithVersionPrefix(t *testing.T) {
-	v, ok, err := DetectLatest("rhysd/github-clone-all")
+	r, ok, err := DetectLatest("rhysd/github-clone-all")
 	if err != nil {
 		t.Fatal("Fetch failed:", err)
 	}
 	if !ok {
 		t.Fatal("Failed to detect latest")
 	}
-	if v.LE(semver.MustParse("2.0.0")) {
-		t.Fatal("Incorrect version:", v)
+	if r == nil {
+		t.Fatal("Release detected but nil returned for it")
+	}
+	if r.Version.LE(semver.MustParse("2.0.0")) {
+		t.Fatal("Incorrect version:", r.Version)
+	}
+	if !strings.HasSuffix(r.AssetURL, ".zip") && !strings.HasSuffix(r.AssetURL, ".tar.gz") {
+		t.Fatal("Incorrect URL for asset:", r.AssetURL)
 	}
 }
 

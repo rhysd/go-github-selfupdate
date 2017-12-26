@@ -10,6 +10,7 @@ import (
 const version = "1.2.3"
 
 func selfUpdate() error {
+	selfupdate.EnableLog()
 	up, err := selfupdate.TryUpdate(version, "go-github-selfupdate", nil)
 	if err != nil {
 		return err
@@ -29,7 +30,7 @@ func usage() {
 func main() {
 	help := flag.Bool("help", false, "Show this help")
 	ver := flag.Bool("version", false, "Show version")
-	selfupdate := flag.Bool("selfupdate", false, "Try go-github-selfupdate via GitHub")
+	update := flag.Bool("selfupdate", false, "Try go-github-selfupdate via GitHub")
 
 	flag.Usage = usage
 	flag.Parse()
@@ -44,7 +45,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *selfupdate {
+	if *update {
 		if err := selfUpdate(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
