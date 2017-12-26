@@ -8,18 +8,20 @@ import (
 	"golang.org/x/oauth2"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 )
 
+var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
+
 // ReleaseDetector is responsible for detecting the latest release using GitHub Releases API.
 type ReleaseDetector struct {
-	verPrefix string
-	api       *github.Client
-	apiCtx    context.Context
+	api    *github.Client
+	apiCtx context.Context
 }
 
 // NewDetector crates a new detector instance. It initializes GitHub API client.
-func NewDetector(versionPrefix string) *ReleaseDetector {
+func NewDetector() *ReleaseDetector {
 	token := os.Getenv("GITHUB_TOKEN")
 	ctx := context.Background()
 
@@ -30,7 +32,7 @@ func NewDetector(versionPrefix string) *ReleaseDetector {
 	}
 
 	client := github.NewClient(auth)
-	return &ReleaseDetector{versionPrefix, client, ctx}
+	return &ReleaseDetector{client, ctx}
 }
 
 // DetectLatest tries to get the latest version of the repository on GitHub. 'slug' means 'owner/name' formatted string.
@@ -43,13 +45,12 @@ func (d *ReleaseDetector) DetectLatest(slug string) (ver semver.Version, found b
 
 	rel, res, err := d.api.Repositories.GetLatestRelease(d.apiCtx, repo[0], repo[1])
 	if err != nil {
+		log.Println("API returned an error response:", err)
 		if res.StatusCode == 404 {
 			// 404 means repository not found or release not found. It's not an error here.
 			found = false
 			err = nil
 			log.Println("API returned 404. Repository or release not found")
-		} else {
-			log.Println("API returned an error:", err)
 		}
 		return
 	}
@@ -57,7 +58,12 @@ func (d *ReleaseDetector) DetectLatest(slug string) (ver semver.Version, found b
 	tag := rel.GetTagName()
 	log.Println("Successfully fetched the latest release. tag:", tag, ", name:", rel.GetName(), ", URL:", rel.GetURL())
 
-	ver, err = semver.Make(strings.TrimPrefix(tag, d.verPrefix))
+	// Strip version prefix
+	if indices := reVersion.FindStringIndex(tag); indices != nil && indices[0] > 0 {
+		tag = tag[indices[0]:]
+	}
+
+	ver, err = semver.Make(tag)
 	if err == nil {
 		found = true
 	}
@@ -65,7 +71,7 @@ func (d *ReleaseDetector) DetectLatest(slug string) (ver semver.Version, found b
 	return
 }
 
-// DetectLatest detects the latest release of the slug (owner/repo). verPrefix is a prefix of version in tag name (i.e. 'v' for 'v1.2.3').
-func DetectLatest(slug, verPrefix string) (semver.Version, bool, error) {
-	return NewDetector(verPrefix).DetectLatest(slug)
+// DetectLatest detects the latest release of the slug (owner/repo).
+func DetectLatest(slug string) (semver.Version, bool, error) {
+	return NewDetector().DetectLatest(slug)
 }

@@ -11,11 +11,11 @@ func TestGitHubTokenEnv(t *testing.T) {
 	if token == "" {
 		t.Skip("because $GITHUB_TOKEN is not set")
 	}
-	_ = NewDetector("")
+	_ = NewDetector()
 }
 
-func TestDetectRelease(t *testing.T) {
-	v, ok, err := DetectLatest("rhysd/github-clone-all", "v")
+func TestDetectReleaseWithVersionPrefix(t *testing.T) {
+	v, ok, err := DetectLatest("rhysd/github-clone-all")
 	if err != nil {
 		t.Fatal("Fetch failed:", err)
 	}
@@ -28,7 +28,7 @@ func TestDetectRelease(t *testing.T) {
 }
 
 func TestInvalidSlug(t *testing.T) {
-	d := NewDetector("v")
+	d := NewDetector()
 
 	for _, slug := range []string{
 		"foo",
@@ -45,7 +45,7 @@ func TestInvalidSlug(t *testing.T) {
 }
 
 func TestNonExistingRepo(t *testing.T) {
-	d := NewDetector("")
+	d := NewDetector()
 	v, ok, err := d.DetectLatest("rhysd/non-existing-repo")
 	if err != nil {
 		t.Fatal("Non-existing repo should not cause an error:", v)
@@ -56,7 +56,7 @@ func TestNonExistingRepo(t *testing.T) {
 }
 
 func TestNoReleaseFound(t *testing.T) {
-	d := NewDetector("")
+	d := NewDetector()
 	_, ok, err := d.DetectLatest("rhysd/misc")
 	if err != nil {
 		t.Fatal("Repo having no release should not cause an error:", err)
