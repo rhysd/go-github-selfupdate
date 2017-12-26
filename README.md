@@ -30,7 +30,7 @@ It provides `selfupdate` package.
 ```go
 import (
     "log"
-    "github.com/rhysd/go-github-selfupdate"
+    "github.com/rhysd/go-github-selfupdate/selfupdate"
 )
 
 func doUpdate(version string) {

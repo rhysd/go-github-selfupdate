@@ -3,13 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/rhysd/go-github-selfupdate/selfupdate"
 	"os"
 )
 
 const version = "1.2.3"
 
 func selfUpdate() error {
-	return nil
 	up, err := selfupdate.TryUpdate(version, "go-github-selfupdate", nil)
 	if err != nil {
 		return err
