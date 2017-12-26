@@ -102,5 +102,5 @@ This library utilizes [go-github][] to retrieve the information of releases and 
 > Copyright (c) 2014 Benedikt Lang <github at benediktlang.de>
 
 [go-github]: https://github.com/google/go-github
-[go-upadte]: https://github.com/inconshreveable/go-update
+[go-update]: https://github.com/inconshreveable/go-update
 [semver]: https://github.com/blang/semver
