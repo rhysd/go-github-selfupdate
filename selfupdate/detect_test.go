@@ -27,10 +27,36 @@ func TestDetectReleaseWithVersionPrefix(t *testing.T) {
 		t.Fatal("Release detected but nil returned for it")
 	}
 	if r.Version.LE(semver.MustParse("2.0.0")) {
-		t.Fatal("Incorrect version:", r.Version)
+		t.Error("Incorrect version:", r.Version)
 	}
 	if !strings.HasSuffix(r.AssetURL, ".zip") && !strings.HasSuffix(r.AssetURL, ".tar.gz") {
-		t.Fatal("Incorrect URL for asset:", r.AssetURL)
+		t.Error("Incorrect URL for asset:", r.AssetURL)
+	}
+	if r.DocumentURL == "" {
+		t.Error("Document URL should not be empty")
+	}
+	if r.Description == "" {
+		t.Error("Description should not be empty for this repo")
+	}
+}
+
+func TestDetectReleaseButNoAsset(t *testing.T) {
+	_, ok, err := DetectLatest("rhysd/clever-f.vim")
+	if err != nil {
+		t.Fatal("Fetch failed:", err)
+	}
+	if ok {
+		t.Fatal("When no asset found, result should be marked as 'not found'")
+	}
+}
+
+func TestDetectNoRelease(t *testing.T) {
+	_, ok, err := DetectLatest("rhysd/clever-f.vim")
+	if err != nil {
+		t.Fatal("Fetch failed:", err)
+	}
+	if ok {
+		t.Fatal("When no release found, result should be marked as 'not found'")
 	}
 }
 

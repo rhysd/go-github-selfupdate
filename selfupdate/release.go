@@ -6,6 +6,8 @@ import (
 
 // Release represents a release asset for current OS and arch.
 type Release struct {
-	Version  semver.Version
-	AssetURL string
+	Version     semver.Version
+	AssetURL    string
+	DocumentURL string
+	Description string
 }
