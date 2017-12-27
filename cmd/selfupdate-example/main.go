@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/blang/semver"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
 	"os"
 )
@@ -11,14 +12,22 @@ const version = "1.2.3"
 
 func selfUpdate() error {
 	selfupdate.EnableLog()
-	up, err := selfupdate.TryUpdate(version, "go-github-selfupdate", nil)
+	latest, err := selfupdate.TryUpdate(version, "go-github-selfupdate", nil)
 	if err != nil {
 		return err
 	}
-	if up.Version == version {
+
+	previous := semver.Make(version)
+	if previous.Equals(latest.Version) {
 		fmt.Println("Current binary is the latest version", version)
 	} else {
-		fmt.Println("Update successfully done to version", up.Version)
+		fmt.Printf(
+			`Update successfully done to version %v
+
+Release note:
+%s
+`,
+			latest.Version, latest.Description)
 	}
 }
 
