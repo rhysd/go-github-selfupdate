@@ -25,11 +25,11 @@ func findSuitableReleaseAndAsset(rels []*github.RepositoryRelease) (*github.Repo
 	// Generate candidates
 	cs := make([]string, 0, 8)
 	for _, sep := range []rune{'_', '-'} {
-		for _, ext := range []string{"zip", "tar.gz"} {
-			suffix := fmt.Sprintf("%s%c%s.%s", runtime.GOOS, sep, runtime.GOARCH, ext)
+		for _, ext := range []string{".zip", ".tar.gz", ""} {
+			suffix := fmt.Sprintf("%s%c%s%s", runtime.GOOS, sep, runtime.GOARCH, ext)
 			cs = append(cs, suffix)
 			if runtime.GOOS == "windows" {
-				suffix = fmt.Sprintf("%s%c%s.exe.%s", runtime.GOOS, sep, runtime.GOARCH, ext)
+				suffix = fmt.Sprintf("%s%c%s.exe%s", runtime.GOOS, sep, runtime.GOARCH, ext)
 				cs = append(cs, suffix)
 			}
 		}
