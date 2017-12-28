@@ -12,12 +12,13 @@ const version = "1.2.3"
 
 func selfUpdate() error {
 	selfupdate.EnableLog()
-	latest, err := selfupdate.TryUpdate(version, "go-github-selfupdate", nil)
+
+	previous := semver.Make(version)
+	latest, err := selfupdate.TryUpdate(previous, "go-github-selfupdate", nil)
 	if err != nil {
 		return err
 	}
 
-	previous := semver.Make(version)
 	if previous.Equals(latest.Version) {
 		fmt.Println("Current binary is the latest version", version)
 	} else {
