@@ -113,9 +113,9 @@ func (d *ReleaseDetector) DetectLatest(slug string) (release *Release, found boo
 	}
 
 	release = &Release{
-		AssetURL:    url,
-		DocumentURL: rel.GetHTMLURL(),
-		Description: rel.GetBody(),
+		AssetURL:     url,
+		URL:          rel.GetHTMLURL(),
+		ReleaseNotes: rel.GetBody(),
 	}
 
 	release.Version, err = semver.Make(tag)

@@ -32,10 +32,10 @@ func TestDetectReleaseWithVersionPrefix(t *testing.T) {
 	if !strings.HasSuffix(r.AssetURL, ".zip") && !strings.HasSuffix(r.AssetURL, ".tar.gz") {
 		t.Error("Incorrect URL for asset:", r.AssetURL)
 	}
-	if r.DocumentURL == "" {
+	if r.URL == "" {
 		t.Error("Document URL should not be empty")
 	}
-	if r.Description == "" {
+	if r.ReleaseNotes == "" {
 		t.Error("Description should not be empty for this repo")
 	}
 }

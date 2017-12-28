@@ -23,7 +23,7 @@ func selfUpdate() error {
 		fmt.Println("Current binary is the latest version", version)
 	} else {
 		fmt.Println("Update successfully done to version", latest.Version)
-		fmt.Println("Release note:\n", latest.Description)
+		fmt.Println("Release note:\n", latest.ReleaseNotes)
 	}
 	return nil
 }
