@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-func uncompress(src io.ReadCloser, url, cmd string) (io.Reader, error) {
+func uncompress(src io.Reader, url, cmd string) (io.Reader, error) {
 	if strings.HasSuffix(url, ".zip") {
 		// Zip format requires its file size for uncompressing.
 		// So we need to read the HTTP response into a buffer at first.

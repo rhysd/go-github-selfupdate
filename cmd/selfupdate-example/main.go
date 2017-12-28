@@ -10,11 +10,11 @@ import (
 
 const version = "1.2.3"
 
-func selfUpdate() error {
+func selfUpdate(slug string) error {
 	selfupdate.EnableLog()
 
 	previous := semver.MustParse(version)
-	latest, err := selfupdate.UpdateSelf(previous, "rhysd/go-github-selfupdate")
+	latest, err := selfupdate.UpdateSelf(previous, slug)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func selfUpdate() error {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: selfupdate-example [flags]")
+	fmt.Fprintln(os.Stderr, "Usage: selfupdate-example [flags]\n")
 	flag.PrintDefaults()
 }
 
@@ -37,6 +37,7 @@ func main() {
 	help := flag.Bool("help", false, "Show this help")
 	ver := flag.Bool("version", false, "Show version")
 	update := flag.Bool("selfupdate", false, "Try go-github-selfupdate via GitHub")
+	slug := flag.String("slug", "rhysd/go-github-selfupdate", "Repository of this command")
 
 	flag.Usage = usage
 	flag.Parse()
@@ -52,7 +53,7 @@ func main() {
 	}
 
 	if *update {
-		if err := selfUpdate(); err != nil {
+		if err := selfUpdate(*slug); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
