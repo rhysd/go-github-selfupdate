@@ -111,5 +111,5 @@ func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Releas
 // UpdateSelf updates the running executable itself to the latest version.
 // 'slug' represents 'owner/name' repository on GitHub and 'current' means the current version.
 func UpdateSelf(current semver.Version, slug string) (*Release, error) {
-	return UpdateCommand(os.Args[0], current, slug, os.Args[0])
+	return UpdateCommand(os.Args[0], current, slug)
 }

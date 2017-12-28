@@ -13,7 +13,7 @@ const version = "1.2.3"
 func selfUpdate() error {
 	selfupdate.EnableLog()
 
-	previous := semver.Make(version)
+	previous := semver.MustParse(version)
 	latest, err := selfupdate.UpdateSelf(previous, "rhysd/go-github-selfupdate")
 	if err != nil {
 		return err
@@ -22,14 +22,10 @@ func selfUpdate() error {
 	if previous.Equals(latest.Version) {
 		fmt.Println("Current binary is the latest version", version)
 	} else {
-		fmt.Printf(
-			`Update successfully done to version %v
-
-Release note:
-%s
-`,
-			latest.Version, latest.Description)
+		fmt.Println("Update successfully done to version", latest.Version)
+		fmt.Println("Release note:\n", latest.Description)
 	}
+	return nil
 }
 
 func usage() {
