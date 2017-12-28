@@ -14,7 +14,7 @@ func selfUpdate() error {
 	selfupdate.EnableLog()
 
 	previous := semver.Make(version)
-	latest, err := selfupdate.TryUpdate(previous, "go-github-selfupdate", nil)
+	latest, err := selfupdate.UpdateSelf(previous, "rhysd/go-github-selfupdate")
 	if err != nil {
 		return err
 	}
