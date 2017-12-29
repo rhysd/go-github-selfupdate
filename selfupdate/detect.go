@@ -88,7 +88,7 @@ func (d *ReleaseDetector) DetectLatest(slug string) (release *Release, found boo
 	rels, res, err := d.api.Repositories.ListReleases(d.apiCtx, repo[0], repo[1], nil)
 	if err != nil {
 		log.Println("API returned an error response:", err)
-		if res.StatusCode == 404 {
+		if res != nil && res.StatusCode == 404 {
 			// 404 means repository not found or release not found. It's not an error here.
 			found = false
 			err = nil
