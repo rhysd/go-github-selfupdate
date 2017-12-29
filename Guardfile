@@ -15,8 +15,4 @@ guard :shell do
     puts "#{Time.now}: #{m[0]}"
     system 'go build ./cmd/selfupdate-example/'
   end
-
-  watch /^testdata\// do |m|
-    system "go test -v -short ./selfupdate/"
-  end
 end

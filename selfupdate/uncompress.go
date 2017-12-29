@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 )
 
@@ -17,28 +18,27 @@ func uncompress(src io.Reader, url, cmd string) (io.Reader, error) {
 		// So we need to read the HTTP response into a buffer at first.
 		buf, err := ioutil.ReadAll(src)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Failed to create buffer for zip file: %s", err)
 		}
 
 		r := bytes.NewReader(buf)
 		z, err := zip.NewReader(r, r.Size())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Failed to uncompress zip file: %s", err)
 		}
 
 		for _, file := range z.File {
-			if file.Name == cmd {
+			_, name := filepath.Split(file.Name)
+			if !file.FileInfo().IsDir() && name == cmd {
 				return file.Open()
 			}
 		}
 
 		return nil, fmt.Errorf("File '%s' for the command is not found in %s", cmd, url)
-	} else if strings.HasSuffix(url, ".gzip") {
-		return gzip.NewReader(src)
 	} else if strings.HasSuffix(url, ".tar.gz") {
 		gz, err := gzip.NewReader(src)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Failed to uncompress .tar.gz file: %s", err)
 		}
 
 		t := tar.NewReader(gz)
@@ -48,14 +48,27 @@ func uncompress(src io.Reader, url, cmd string) (io.Reader, error) {
 				break
 			}
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("Failed to unarchive .tar file: %s", err)
 			}
-			if h.Name == cmd {
+			_, name := filepath.Split(h.Name)
+			if name == cmd {
 				return t, nil
 			}
 		}
 
 		return nil, fmt.Errorf("File '%s' for the command is not found in %s", cmd, url)
+	} else if strings.HasSuffix(url, ".gzip") || strings.HasSuffix(url, ".gz") {
+		r, err := gzip.NewReader(src)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to uncompress gzip file downloaded from %s: %s", url, err)
+		}
+
+		name := r.Header.Name
+		if name != cmd {
+			return nil, fmt.Errorf("File name '%s' does not match to command '%s' found in %s", name, cmd, url)
+		}
+
+		return r, nil
 	}
 
 	return src, nil
