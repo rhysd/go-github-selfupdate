@@ -13,11 +13,11 @@ import (
 func UpdateTo(assetURL, cmdPath string) error {
 	res, err := http.Get(assetURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to download a release file from %s: %s", assetURL, err)
 	}
 
 	if res.StatusCode != 200 {
-		return fmt.Errorf("Failed to download a release file from %s ", assetURL)
+		return fmt.Errorf("Failed to download a release file from %s", assetURL)
 	}
 
 	defer res.Body.Close()

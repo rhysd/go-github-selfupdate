@@ -1,6 +1,7 @@
 package selfupdate
 
 import (
+	"fmt"
 	"github.com/blang/semver"
 	"os"
 	"strings"
@@ -40,6 +41,40 @@ func TestDetectReleaseWithVersionPrefix(t *testing.T) {
 	}
 }
 
+func TestDetectReleasesForVariousArchives(t *testing.T) {
+	for _, repo := range []string{
+		"rhysd-test/test-release-zip",
+		"rhysd-test/test-release-tar",
+		"rhysd-test/test-release-gzip",
+	} {
+		t.Run(repo, func(t *testing.T) {
+			r, ok, err := DetectLatest(repo)
+			if err != nil {
+				t.Fatal("Fetch failed:", err)
+			}
+			if !ok {
+				t.Fatal(repo, "not found")
+			}
+			if r == nil {
+				t.Fatal("Release not detected")
+			}
+			if !r.Version.Equals(semver.MustParse("1.2.3")) {
+				t.Error("")
+			}
+			url := fmt.Sprintf("https://github.com/%s/releases/tag/v1.2.3", repo)
+			if r.URL != url {
+				t.Error("URL is not wrong. Want", url, "but got", r.URL)
+			}
+			if r.ReleaseNotes == "" {
+				t.Error("Release note is unexpectedly empty")
+			}
+			if !strings.HasPrefix(r.AssetURL, fmt.Sprintf("https://github.com/%s/releases/download/v1.2.3/", repo)) {
+				t.Error("Unexpected asset URL:", r.AssetURL)
+			}
+		})
+	}
+}
+
 func TestDetectReleaseButNoAsset(t *testing.T) {
 	_, ok, err := DetectLatest("rhysd/clever-f.vim")
 	if err != nil {
@@ -73,6 +108,9 @@ func TestInvalidSlug(t *testing.T) {
 		_, _, err := d.DetectLatest(slug)
 		if err == nil {
 			t.Error(slug, "should be invalid slug")
+		}
+		if !strings.Contains(err.Error(), "Invalid slug format") {
+			t.Error("Unexpected error for", slug, ":", err)
 		}
 	}
 }
