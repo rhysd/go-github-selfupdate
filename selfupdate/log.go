@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var log = stdlog.New(ioutil.Discard, "", stdlog.Ltime)
+var log = stdlog.New(ioutil.Discard, "", 0)
 var logEnabled = false
 
 // EnableLog enables to output logging messages in library
@@ -16,6 +16,7 @@ func EnableLog() {
 	}
 	logEnabled = true
 	log.SetOutput(os.Stderr)
+	log.SetFlags(stdlog.Ltime)
 }
 
 // DisableLog disables to output logging messages in library
@@ -25,4 +26,5 @@ func DisableLog() {
 	}
 	logEnabled = false
 	log.SetOutput(ioutil.Discard)
+	log.SetFlags(0)
 }
