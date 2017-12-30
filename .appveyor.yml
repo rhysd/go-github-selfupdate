@@ -13,6 +13,7 @@ build: off
 test_script:
     - go build ./selfupdate
     - go build ./cmd/selfupdate-example
+    - go build ./cmd/detect-latest-release
     - go test -v -race -coverprofile=coverage.txt ./selfupdate
 after_test:
     - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"

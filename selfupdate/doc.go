@@ -30,5 +30,8 @@ Naming Rules of Git Tags:
 
 This package is hosted on GitHub:
   https://github.com/rhysd/go-github-selfupdate
+
+Small CLI tool as wrapper of this library is available also:
+  https://github.com/rhysd/go-github-selfupdate/cmd/detect-latest-release
 */
 package selfupdate
