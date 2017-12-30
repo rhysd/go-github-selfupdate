@@ -7,14 +7,19 @@ if [ ! -d .git ]; then
     exit 1
 fi
 
-command=selfupdate-example
+executable=selfupdate-example
 
 rm -rf release
-gox -verbose ./cmd/$command
+gox -verbose ./cmd/$executable
 mkdir -p release
 mv selfupdate-example_* release/
 cd release
 for bin in *; do
+    if [[ "$bin" == *windows* ]]; then
+        command="${executable}.exe"
+    else
+        command="$executable"
+    fi
     mv "$bin" "$command"
     zip "${bin}.zip" "$command"
     rm "$command"
