@@ -32,7 +32,32 @@ If newer version than itself is detected, it downloads released binary from GitH
 
 ## Try Out Example
 
-TODO
+Example to understand what this library does is prepared as [CLI](./cmd/selfupdate-example/main.go).
+
+Install it at first.
+
+```
+$ go get -u github.com/rhysd/go-github-selfupdate/tree/master/cmd/selfupdate-example
+```
+
+And check the version by `-version`. `-help` flag is also available to know all flags.
+
+```
+$ selfupdate-example -version
+```
+
+It should show `v1.2.3`.
+
+Then run `-selfupdate`
+
+```
+$ selfupdate-example -selfupdate
+```
+
+It should replace itself and finally shows a message containing release notes.
+
+Please check the binary version is updated to `v1.2.4` with `-version`. The binary is up-to-date. So running `-selfupdate` again only shows 'Current binary is the latest version'.
+
 
 ## Usage
 
