@@ -253,7 +253,7 @@ current binary and [semver][] to compare versions.
 [go-update]: https://github.com/inconshreveable/go-update
 [semver]: https://github.com/blang/semver
 
-## What is the different from [tj/go-update][]?
+## What is different from [tj/go-update][]?
 
 This library goal is the same as tj/go-update, but it's different in following points.
 
@@ -263,6 +263,7 @@ tj/go-update:
 - only allows `v` for version prefix
 - does not ignore pre-release
 - has [only a few tests](https://github.com/tj/go-update/blob/master/update_test.go)
+- supports Apex store for putting releases
 
 [tj/go-update]: https://github.com/tj/go-update
 
