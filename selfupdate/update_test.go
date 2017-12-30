@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -16,7 +17,11 @@ func setupTestBinary() {
 }
 
 func teardownTestBinary() {
-	if err := os.Remove("github-release-test"); err != nil {
+	bin := "github-release-test"
+	if runtime.GOOS == "windows" {
+		bin = "github-release-test.exe"
+	}
+	if err := os.Remove(bin); err != nil {
 		panic(err)
 	}
 }
