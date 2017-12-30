@@ -27,9 +27,10 @@ If newer version than itself is detected, it downloads released binary from GitH
 - Tested on Linux, macOS and Windows (using Travis CI and AppVeyor)
 - Many archive and compression formats are supported (zip, gzip, tar)
 
-And small wrapper CLI is provided:
+And small wrapper CLIs are provided:
 
 - [detect-latest-release](./cmd/detect-latest-release): Detect the latest release of given GitHub repository from command line
+- [go-get-release](./cmd/go-get-release): Like `go get`, but install release binary from GitHub instead
 
 [go-github-selfupdate]: https://github.com/rhysd/go-github-selfupdate
 [GitHub Releases API]: https://developer.github.com/v3/repos/releases/
