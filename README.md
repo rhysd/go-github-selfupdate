@@ -1,6 +1,11 @@
 Self-Update Mechanism for Go Commands using GitHub
 ==================================================
 
+[![GoDoc Badge][]][GoDoc]
+[![TravisCI Status][]][TravisCI]
+[![AppVeyor Status][]][AppVeyor]
+[![Codecov Status][]][Codecov]
+
 [go-github-selfupdate][] is a Go library to provide self-update mechanism to command line tools.
 
 Go does not provide the way to install/update the stable version of tools. By default, Go command line tools are updated
@@ -19,7 +24,7 @@ If newer version than itself is detected, it downloads released binary from GitH
 - Automatically detects the latest version of released binary on GitHub
 - Retrieve the proper binary for the OS and arch where the binary is running
 - Update the binary with rollback support on failure
-- Tested on Linux, macOS and Windows
+- Tested on Linux, macOS and Windows (using Travis CI and AppVeyor)
 - Many archive and compression formats are supported (zip, gzip, tar)
 
 [go-github-selfupdate]: https://github.com/rhysd/go-github-selfupdate
@@ -228,7 +233,11 @@ tj/go-update:
 
 Distributed under the [MIT License](LICENSE)
 
-
-
+[GoDoc Badge]: https://godoc.org/github.com/rhysd/go-github-selfupdate/selfupdate?status.svg
 [GoDoc]: https://godoc.org/github.com/rhysd/go-github-selfupdate/selfupdate
-
+[TravisCI Status]: https://travis-ci.org/rhysd/go-github-selfupdate.svg?branch=master
+[TravisCI]: https://travis-ci.org/rhysd/go-github-selfupdate
+[AppVeyor Status]: https://ci.appveyor.com/api/projects/status/1tpyd9q9tw3ime5u/branch/master?svg=true
+[AppVeyor]: https://ci.appveyor.com/project/rhysd/go-github-selfupdate/branch/master
+[Codecov Status]: https://codecov.io/gh/rhysd/go-github-selfupdate/branch/master/graph/badge.svg
+[Codecov]: https://codecov.io/gh/rhysd/go-github-selfupdate
