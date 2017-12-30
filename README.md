@@ -35,12 +35,17 @@ TODO
 
 It provides `selfupdate` package.
 
+- `selfupdate.UpdateSelf()`: Detect the latest version of itself and run self update.
+- `selfupdate.UpdateCommand()`: Detect the latest version of given repository and update given command.
+- `selfupdate.DetectLatest()`: Detect the latest version of given repository.
+- `selfupdate.UpdateTo()`: Update given command to the binary hosted on given URL.
+
 Following is the easiest way to use this package.
 
 ```go
 import (
     "log"
-	"github.com/blang/semver"
+    "github.com/blang/semver"
     "github.com/rhysd/go-github-selfupdate/selfupdate"
 )
 
@@ -58,14 +63,54 @@ func doSelfUpdate() {
         log.Println("Current binary is the latest version", version)
     } else {
         log.Println("Successfully updated to version", latest.Version)
+        log.Println("Release note:\n", latest.ReleaseNotes)
     }
 }
 ```
 
-- `selfupdate.UpdateSelf()`: Detect the latest version of itself and run self update.
-- `selfupdate.UpdateCommand()`: Detect the latest version of given repository and update given command.
-- `selfupdate.DetectLatest()`: Detect the latest version of given repository.
-- `selfupdate.UpdateTo()`: Update given command to the binary hosted on given URL.
+Following asks user to update or not.
+
+```go
+import (
+    "bufio"
+    "github.com/blang/semver"
+    "github.com/rhysd/go-github-selfupdate/selfupdate"
+    "log"
+    "os"
+)
+
+const version = "1.2.3"
+
+func confirmAndSelfUpdate() {
+    latest, found, err := selfupdate.DetectLatest("owner/repo")
+    if err != nil {
+        log.Println("Error occurred while detecting version:", err)
+        return
+    }
+
+    v := semver.MustParse(version)
+    if !found || latest.Version.Equals(v) {
+        log.Println("Current version is the latest")
+        return
+    }
+
+    fmt.Print("Do you want to update to", latest.Version, "? (y/n): ")
+    input, err := bufio.NewReader(os.Stdin).ReadString('\n')
+    if err != nil || (input != "y\n" && input != "n\n") {
+        log.Println("Invalid input")
+        return
+    }
+    if input == "n\n" {
+        return
+    }
+
+    if err := selfupdate.UpdateTo(latest.AssetURL, os.Args[0]); err != nil {
+        log.Println("Error occurred while updating binary:", err)
+        return
+    }
+    log.Println("Successfully updated to version", latest.Version)
+}
+```
 
 Please see [the documentation page][GoDoc] for more detail.
 
