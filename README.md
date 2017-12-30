@@ -163,9 +163,18 @@ current binary and [semver][] to compare versions.
 
 ## What is the different from [tj/go-update][]?
 
-TODO
+This library goal is the same as tj/go-update, but it's different in following points.
+
+tj/go-update:
+
+- does not support Windows
+- only allows `v` for version prefix
+- does not ignore pre-release
+- has [only a few tests](https://github.com/tj/go-update/blob/master/update_test.go)
 
 [tj/go-udpate]: https://github.com/tj/go-update
+
+
 
 [GoDoc]: https://godoc.org/github.com/rhysd/go-github-selfupdate
 
