@@ -58,6 +58,13 @@ It should replace itself and finally shows a message containing release notes.
 
 Please check the binary version is updated to `v1.2.4` with `-version`. The binary is up-to-date. So running `-selfupdate` again only shows 'Current binary is the latest version'.
 
+### Real World Examples
+
+Following tools are using this library.
+
+- [dot-github](https://github.com/rhysd/dot-github)
+- [dotfiles](https://github.com/rhysd/dotfiles)
+- [git-clone-all](https://github.com/rhysd/git-clone-all)
 
 ## Usage
 
