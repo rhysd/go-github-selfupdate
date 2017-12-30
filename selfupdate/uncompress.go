@@ -12,7 +12,8 @@ import (
 	"strings"
 )
 
-func uncompress(src io.Reader, url, cmd string) (io.Reader, error) {
+// UncompressCommand uncompresses the given source. Archive and compression format is automatically detected from 'url' parameter, which represents the URL of asset. This returns a reader for the uncompressed command given by 'cmd'.
+func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 	if strings.HasSuffix(url, ".zip") {
 		log.Println("Uncompressing zip file", url)
 

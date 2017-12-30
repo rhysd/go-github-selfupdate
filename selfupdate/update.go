@@ -24,7 +24,7 @@ func UpdateTo(assetURL, cmdPath string) error {
 
 	defer res.Body.Close()
 	_, cmd := filepath.Split(cmdPath)
-	asset, err := uncompress(res.Body, assetURL, cmd)
+	asset, err := UncompressCommand(res.Body, assetURL, cmd)
 	if err != nil {
 		return err
 	}

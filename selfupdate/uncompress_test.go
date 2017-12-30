@@ -12,7 +12,7 @@ import (
 func TestCompressionNotRequired(t *testing.T) {
 	buf := []byte{'a', 'b', 'c'}
 	want := bytes.NewReader(buf)
-	r, err := uncompress(want, "https://github.com/foo/bar/releases/download/v1.2.3/foo", "foo")
+	r, err := UncompressCommand(want, "https://github.com/foo/bar/releases/download/v1.2.3/foo", "foo")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestUncompress(t *testing.T) {
 			}
 
 			url := "https://github.com/foo/bar/releases/download/v1.2.3/bar" + ext
-			r, err := uncompress(f, url, "bar")
+			r, err := UncompressCommand(f, url, "bar")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -89,7 +89,7 @@ func TestUncompressInvalidArchive(t *testing.T) {
 		}
 
 		url := "https://github.com/foo/bar/releases/download/v1.2.3/bar" + ext
-		_, err = uncompress(f, url, "bar")
+		_, err = UncompressCommand(f, url, "bar")
 		if err == nil {
 			t.Fatal("Error should be raised")
 		}
@@ -110,7 +110,7 @@ func TestTargetNotFoundInZip(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			_, err = uncompress(f, "https://github.com/foo/bar/releases/download/v1.2.3/bar.zip", "bar")
+			_, err = UncompressCommand(f, "https://github.com/foo/bar/releases/download/v1.2.3/bar.zip", "bar")
 			if err == nil {
 				t.Fatal("Error should be raised for")
 			}
@@ -127,7 +127,7 @@ func TestTargetNotFoundInGZip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = uncompress(f, "https://github.com/foo/bar/releases/download/v1.2.3/bar.gzip", "bar")
+	_, err = UncompressCommand(f, "https://github.com/foo/bar/releases/download/v1.2.3/bar.gzip", "bar")
 	if err == nil {
 		t.Fatal("Error should be raised for")
 	}
@@ -147,7 +147,7 @@ func TestTargetNotFoundInTarGz(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			_, err = uncompress(f, "https://github.com/foo/bar/releases/download/v1.2.3/bar.tar.gz", "bar")
+			_, err = UncompressCommand(f, "https://github.com/foo/bar/releases/download/v1.2.3/bar.tar.gz", "bar")
 			if err == nil {
 				t.Fatal("Error should be raised for")
 			}
