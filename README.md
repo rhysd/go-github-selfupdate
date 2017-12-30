@@ -177,7 +177,11 @@ tj/go-update:
 - does not ignore pre-release
 - has [only a few tests](https://github.com/tj/go-update/blob/master/update_test.go)
 
-[tj/go-udpate]: https://github.com/tj/go-update
+[tj/go-update]: https://github.com/tj/go-update
+
+## License
+
+Distributed under the [MIT License](LICENSE)
 
 
 
