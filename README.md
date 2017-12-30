@@ -98,6 +98,9 @@ page on GitHub as binary for platform `linux` and arch `amd64`.
 - `foo-bar_linux_amd64.gzip` (gzip file of the executable `foo-bar`)
 - `foo-bar-linux-amd64.tar.gz` (`-` is also ok for separator)
 
+To archive the executable directly on Windows, `.exe` can be added before file extension like
+`foo-bar_windows_amd64.exe.zip`.
+
 [gox]: https://github.com/mitchellh/gox
 
 
