@@ -23,7 +23,6 @@ If newer version than itself is detected, it downloads released binary from GitH
 - Many archive and compression formats are supported (zip, gzip, tar)
 
 [go-github-selfupdate]: https://github.com/rhysd/go-github-selfupdate
-[semantic versioning]: https://semver.org/
 [GitHub Releases API]: https://developer.github.com/v3/repos/releases/
 
 ## Try Out Example
@@ -117,6 +116,9 @@ Prefix before version number `\d+\.\d+\.\d+` is automatically omitted. For examp
 Tags which don't contain a version number are ignored (i.e. `nightly`). And releases marked as `pre-release`
 are also ignored.
 
+[semantic versioning]: https://semver.org/
+
+
 ### Structure of Releases
 
 In summary, structure of releases on GitHub looks like:
@@ -176,5 +178,5 @@ tj/go-update:
 
 
 
-[GoDoc]: https://godoc.org/github.com/rhysd/go-github-selfupdate
+[GoDoc]: https://godoc.org/github.com/rhysd/go-github-selfupdate/selfupdate
 
