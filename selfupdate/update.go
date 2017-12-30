@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 // UpdateTo download an executable from assetURL and replace the current binary with the downloaded one. cmdPath is a file path to command executable.
@@ -36,6 +38,10 @@ func UpdateTo(assetURL, cmdPath string) error {
 // UpdateCommand updates a given command binary to the latest version.
 // 'slug' represents 'owner/name' repository on GitHub and 'current' means the current version.
 func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Release, error) {
+	if runtime.GOOS == "windows" && !strings.HasSuffix(cmdPath, ".exe") {
+		cmdPath = cmdPath + ".exe"
+	}
+
 	rel, ok, err := DetectLatest(slug)
 	if err != nil {
 		return nil, err
