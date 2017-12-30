@@ -27,6 +27,7 @@ func UpdateTo(assetURL, cmdPath string) error {
 		return err
 	}
 
+	log.Println("Will update", cmdPath, "to the latest downloaded from", assetURL)
 	return update.Apply(asset, update.Options{
 		TargetPath: cmdPath,
 	})
@@ -40,11 +41,14 @@ func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Releas
 		return nil, err
 	}
 	if !ok {
+		log.Println("No release detected. Current version is considered up-to-date")
 		return &Release{Version: current}, nil
 	}
 	if current.Equals(rel.Version) {
+		log.Println("Current version", current, "is the latest. Update is not needed")
 		return rel, nil
 	}
+	log.Println("Will update", cmdPath, "to the latest version", rel.Version)
 	if err := UpdateTo(rel.AssetURL, cmdPath); err != nil {
 		return nil, err
 	}

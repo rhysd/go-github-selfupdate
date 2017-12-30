@@ -14,6 +14,8 @@ import (
 
 func uncompress(src io.Reader, url, cmd string) (io.Reader, error) {
 	if strings.HasSuffix(url, ".zip") {
+		log.Println("Uncompressing zip file", url)
+
 		// Zip format requires its file size for uncompressing.
 		// So we need to read the HTTP response into a buffer at first.
 		buf, err := ioutil.ReadAll(src)
@@ -36,6 +38,8 @@ func uncompress(src io.Reader, url, cmd string) (io.Reader, error) {
 
 		return nil, fmt.Errorf("File '%s' for the command is not found in %s", cmd, url)
 	} else if strings.HasSuffix(url, ".tar.gz") {
+		log.Println("Uncompressing tar.gz file", url)
+
 		gz, err := gzip.NewReader(src)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to uncompress .tar.gz file: %s", err)
@@ -58,6 +62,8 @@ func uncompress(src io.Reader, url, cmd string) (io.Reader, error) {
 
 		return nil, fmt.Errorf("File '%s' for the command is not found in %s", cmd, url)
 	} else if strings.HasSuffix(url, ".gzip") || strings.HasSuffix(url, ".gz") {
+		log.Println("Uncompressing gzip file", url)
+
 		r, err := gzip.NewReader(src)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to uncompress gzip file downloaded from %s: %s", url, err)
@@ -71,5 +77,6 @@ func uncompress(src io.Reader, url, cmd string) (io.Reader, error) {
 		return r, nil
 	}
 
+	log.Println("Uncompression is not needed", url)
 	return src, nil
 }

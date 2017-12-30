@@ -5,7 +5,7 @@ import (
 )
 
 func TestEnableDisableLog(t *testing.T) {
-	defer EnableLog()
+	defer DisableLog()
 
 	EnableLog()
 	if !logEnabled {
