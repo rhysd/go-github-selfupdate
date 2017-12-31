@@ -51,20 +51,23 @@ func TestDetectReleaseWithVersionPrefix(t *testing.T) {
 }
 
 func TestDetectReleasesForVariousArchives(t *testing.T) {
-	for _, repo := range []string{
-		"rhysd-test/test-release-zip",
-		"rhysd-test/test-release-tar",
-		"rhysd-test/test-release-gzip",
-		"rhysd-test/test-release-xz",
-		"rhysd-test/test-release-tar-xz",
+	for _, tc := range []struct {
+		slug   string
+		prefix string
+	}{
+		{"rhysd-test/test-release-zip", "v"},
+		{"rhysd-test/test-release-tar", "v"},
+		{"rhysd-test/test-release-gzip", "v"},
+		{"rhysd-test/test-release-xz", "release-v"},
+		{"rhysd-test/test-release-tar-xz", "release-"},
 	} {
-		t.Run(repo, func(t *testing.T) {
-			r, ok, err := DetectLatest(repo)
+		t.Run(tc.slug, func(t *testing.T) {
+			r, ok, err := DetectLatest(tc.slug)
 			if err != nil {
 				t.Fatal("Fetch failed:", err)
 			}
 			if !ok {
-				t.Fatal(repo, "not found")
+				t.Fatal(tc.slug, "not found")
 			}
 			if r == nil {
 				t.Fatal("Release not detected")
@@ -72,14 +75,14 @@ func TestDetectReleasesForVariousArchives(t *testing.T) {
 			if !r.Version.Equals(semver.MustParse("1.2.3")) {
 				t.Error("")
 			}
-			url := fmt.Sprintf("https://github.com/%s/releases/tag/v1.2.3", repo)
+			url := fmt.Sprintf("https://github.com/%s/releases/tag/%s1.2.3", tc.slug, tc.prefix)
 			if r.URL != url {
-				t.Error("URL is not wrong. Want", url, "but got", r.URL)
+				t.Error("URL is not correct. Want", url, "but got", r.URL)
 			}
 			if r.ReleaseNotes == "" {
 				t.Error("Release note is unexpectedly empty")
 			}
-			if !strings.HasPrefix(r.AssetURL, fmt.Sprintf("https://github.com/%s/releases/download/v1.2.3/", repo)) {
+			if !strings.HasPrefix(r.AssetURL, fmt.Sprintf("https://github.com/%s/releases/download/%s1.2.3/", tc.slug, tc.prefix)) {
 				t.Error("Unexpected asset URL:", r.AssetURL)
 			}
 			if r.Name == "" {
