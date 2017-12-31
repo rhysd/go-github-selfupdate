@@ -32,7 +32,10 @@ func unarchiveTar(src io.Reader, url, cmd string) (io.Reader, error) {
 	return nil, fmt.Errorf("File '%s' for the command is not found in %s", cmd, url)
 }
 
-// UncompressCommand uncompresses the given source. Archive and compression format is automatically detected from 'url' parameter, which represents the URL of asset. This returns a reader for the uncompressed command given by 'cmd'.
+// UncompressCommand uncompresses the given source. Archive and compression format is
+// automatically detected from 'url' parameter, which represents the URL of asset.
+// This returns a reader for the uncompressed command given by 'cmd'. '.zip',
+// '.tar.gz', '.tar.xz', '.gz' and '.xz' are supported.
 func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 	if strings.HasSuffix(url, ".zip") {
 		log.Println("Uncompressing zip file", url)

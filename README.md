@@ -25,7 +25,7 @@ If newer version than itself is detected, it downloads released binary from GitH
 - Retrieve the proper binary for the OS and arch where the binary is running
 - Update the binary with rollback support on failure
 - Tested on Linux, macOS and Windows (using Travis CI and AppVeyor)
-- Many archive and compression formats are supported (zip, gzip, tar)
+- Many archive and compression formats are supported (zip, tar, gzip, xzip)
 
 And small wrapper CLIs are provided:
 
@@ -169,7 +169,7 @@ You need to put the binaries with the following format.
 
 `{cmd}` is a name of command.
 `{goos}` and `{goarch}` are the platform and the arch type of the binary.
-`{.ext}` is a file extension. go-github-selfupdate supports `.zip`, `.gzip` and `.tar.gz`.
+`{.ext}` is a file extension. go-github-selfupdate supports `.zip`, `.gzip`, `.tar.gz` and `.tar.xz`.
 You can also use blank and it means binary is not compressed.
 
 If you compress binary, uncompressed directory or file must contain the executable named `{cmd}`. 
@@ -182,7 +182,7 @@ page on GitHub as binary for platform `linux` and arch `amd64`.
 - `foo-bar_linux_amd64` (executable)
 - `foo-bar_linux_amd64.zip` (zip file containing `foo-bar`)
 - `foo-bar_linux_amd64.tar.gz` (tar file containing `foo-bar`)
-- `foo-bar_linux_amd64.gzip` (gzip file of the executable `foo-bar`)
+- `foo-bar_linux_amd64.xz` (xzip file of the executable `foo-bar`)
 - `foo-bar-linux-amd64.tar.gz` (`-` is also ok for separator)
 
 To archive the executable directly on Windows, `.exe` can be added before file extension like
