@@ -39,6 +39,15 @@ func TestDetectReleaseWithVersionPrefix(t *testing.T) {
 	if r.ReleaseNotes == "" {
 		t.Error("Description should not be empty for this repo")
 	}
+	if r.Name == "" {
+		t.Error("Release name is unexpectedly empty")
+	}
+	if r.AssetByteSize == 0 {
+		t.Error("Asset's size is unexpectedly zero")
+	}
+	if r.PublishedAt.IsZero() {
+		t.Error("Release time is unexpectedly zero")
+	}
 }
 
 func TestDetectReleasesForVariousArchives(t *testing.T) {
@@ -46,6 +55,8 @@ func TestDetectReleasesForVariousArchives(t *testing.T) {
 		"rhysd-test/test-release-zip",
 		"rhysd-test/test-release-tar",
 		"rhysd-test/test-release-gzip",
+		"rhysd-test/test-release-xz",
+		"rhysd-test/test-release-tar-xz",
 	} {
 		t.Run(repo, func(t *testing.T) {
 			r, ok, err := DetectLatest(repo)
@@ -70,6 +81,15 @@ func TestDetectReleasesForVariousArchives(t *testing.T) {
 			}
 			if !strings.HasPrefix(r.AssetURL, fmt.Sprintf("https://github.com/%s/releases/download/v1.2.3/", repo)) {
 				t.Error("Unexpected asset URL:", r.AssetURL)
+			}
+			if r.Name == "" {
+				t.Error("Release name is unexpectedly empty")
+			}
+			if r.AssetByteSize == 0 {
+				t.Error("Asset's size is unexpectedly zero")
+			}
+			if r.PublishedAt.IsZero() {
+				t.Error("Release time is unexpectedly zero")
 			}
 		})
 	}

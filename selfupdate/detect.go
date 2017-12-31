@@ -112,10 +112,14 @@ func (d *ReleaseDetector) DetectLatest(slug string) (release *Release, found boo
 		tag = tag[indices[0]:]
 	}
 
+	publishedAt := rel.GetPublishedAt().Time
 	release = &Release{
-		AssetURL:     url,
-		URL:          rel.GetHTMLURL(),
-		ReleaseNotes: rel.GetBody(),
+		AssetURL:      url,
+		AssetByteSize: asset.GetSize(),
+		URL:           rel.GetHTMLURL(),
+		ReleaseNotes:  rel.GetBody(),
+		Name:          rel.GetName(),
+		PublishedAt:   &publishedAt,
 	}
 
 	release.Version, err = semver.Make(tag)
