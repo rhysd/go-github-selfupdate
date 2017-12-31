@@ -35,6 +35,8 @@ func TestUpdateCommand(t *testing.T) {
 		"rhysd-test/test-release-zip",
 		"rhysd-test/test-release-tar",
 		"rhysd-test/test-release-gzip",
+		"rhysd-test/test-release-tar-xz",
+		"rhysd-test/test-release-xz",
 	} {
 		t.Run(slug, func(t *testing.T) {
 			setupTestBinary()
@@ -101,6 +103,10 @@ func TestCurrentIsTheLatest(t *testing.T) {
 }
 
 func TestBrokenBinaryUpdate(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skip tests in short mode.")
+	}
+
 	_, err := UpdateCommand("foo", semver.MustParse("1.2.2"), "rhysd-test/test-incorrect-release")
 	if err == nil {
 		t.Fatal("Error should occur for broken package")

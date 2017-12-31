@@ -6,13 +6,36 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"github.com/ulikunitz/xz"
 	"io"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 )
 
-// UncompressCommand uncompresses the given source. Archive and compression format is automatically detected from 'url' parameter, which represents the URL of asset. This returns a reader for the uncompressed command given by 'cmd'.
+func unarchiveTar(src io.Reader, url, cmd string) (io.Reader, error) {
+	t := tar.NewReader(src)
+	for {
+		h, err := t.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Failed to unarchive .tar file: %s", err)
+		}
+		_, name := filepath.Split(h.Name)
+		if name == cmd {
+			return t, nil
+		}
+	}
+
+	return nil, fmt.Errorf("File '%s' for the command is not found in %s", cmd, url)
+}
+
+// UncompressCommand uncompresses the given source. Archive and compression format is
+// automatically detected from 'url' parameter, which represents the URL of asset.
+// This returns a reader for the uncompressed command given by 'cmd'. '.zip',
+// '.tar.gz', '.tar.xz', '.gz' and '.xz' are supported.
 func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 	if strings.HasSuffix(url, ".zip") {
 		log.Println("Uncompressing zip file", url)
@@ -46,22 +69,7 @@ func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 			return nil, fmt.Errorf("Failed to uncompress .tar.gz file: %s", err)
 		}
 
-		t := tar.NewReader(gz)
-		for {
-			h, err := t.Next()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				return nil, fmt.Errorf("Failed to unarchive .tar file: %s", err)
-			}
-			_, name := filepath.Split(h.Name)
-			if name == cmd {
-				return t, nil
-			}
-		}
-
-		return nil, fmt.Errorf("File '%s' for the command is not found in %s", cmd, url)
+		return unarchiveTar(gz, url, cmd)
 	} else if strings.HasSuffix(url, ".gzip") || strings.HasSuffix(url, ".gz") {
 		log.Println("Uncompressing gzip file", url)
 
@@ -76,6 +84,23 @@ func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 		}
 
 		return r, nil
+	} else if strings.HasSuffix(url, ".tar.xz") {
+		log.Println("Uncompressing tar.xz file", url)
+
+		xzip, err := xz.NewReader(src)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to uncompress .tar.xz file: %s", err)
+		}
+
+		return unarchiveTar(xzip, url, cmd)
+	} else if strings.HasSuffix(url, ".xz") {
+		log.Println("Uncompressing xzip file", url)
+
+		xzip, err := xz.NewReader(src)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to uncompress xzip file downloaded from %s: %s", url, err)
+		}
+		return xzip, nil
 	}
 
 	log.Println("Uncompression is not needed", url)

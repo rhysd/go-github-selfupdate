@@ -18,7 +18,7 @@ If newer version than itself is detected, it downloads released binary from GitH
 - Retrieve the proper binary for the OS and arch where the binary is running
 - Update the binary with rollback support on failure
 - Tested on Linux, macOS and Windows
-- Many archive and compression formats are supported (zip, gzip, tar)
+- Many archive and compression formats are supported (zip, gzip, xzip, tar)
 
 There are some naming rules. Please read following links.
 
