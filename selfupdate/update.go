@@ -39,6 +39,7 @@ func UpdateTo(assetURL, cmdPath string) error {
 // 'slug' represents 'owner/name' repository on GitHub and 'current' means the current version.
 func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Release, error) {
 	if runtime.GOOS == "windows" && !strings.HasSuffix(cmdPath, ".exe") {
+		// Ensure to add '.exe' to given path on Windows
 		cmdPath = cmdPath + ".exe"
 	}
 

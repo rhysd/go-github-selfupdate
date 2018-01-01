@@ -25,6 +25,7 @@ func unarchiveTar(src io.Reader, url, cmd string) (io.Reader, error) {
 		}
 		_, name := filepath.Split(h.Name)
 		if name == cmd {
+			log.Println("Executable file", h.Name, "was found in tar archive")
 			return t, nil
 		}
 	}
@@ -56,6 +57,7 @@ func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 		for _, file := range z.File {
 			_, name := filepath.Split(file.Name)
 			if !file.FileInfo().IsDir() && name == cmd {
+				log.Println("Executable file", file.Name, "was found in zip archive")
 				return file.Open()
 			}
 		}
@@ -83,6 +85,7 @@ func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 			return nil, fmt.Errorf("File name '%s' does not match to command '%s' found in %s", name, cmd, url)
 		}
 
+		log.Println("Executable file", name, "was found in gzip file")
 		return r, nil
 	} else if strings.HasSuffix(url, ".tar.xz") {
 		log.Println("Uncompressing tar.xz file", url)
@@ -100,6 +103,7 @@ func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Failed to uncompress xzip file downloaded from %s: %s", url, err)
 		}
+		log.Println("Uncompressed file from xzip is assumed to be an executable", cmd)
 		return xzip, nil
 	}
 
