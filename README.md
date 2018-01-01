@@ -69,7 +69,7 @@ Following tools are using this library.
 
 - [dot-github](https://github.com/rhysd/dot-github)
 - [dotfiles](https://github.com/rhysd/dotfiles)
-- [git-clone-all](https://github.com/rhysd/git-clone-all)
+- [github-clone-all](https://github.com/rhysd/github-clone-all)
 
 ## Usage
 
