@@ -2,13 +2,14 @@ package selfupdate
 
 import (
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/inconshreveable/go-update"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/blang/semver"
+	"github.com/inconshreveable/go-update"
 )
 
 // UpdateTo download an executable from assetURL and replace the current binary with the downloaded one. cmdPath is a file path to command executable.
@@ -65,5 +66,9 @@ func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Releas
 // UpdateSelf updates the running executable itself to the latest version.
 // 'slug' represents 'owner/name' repository on GitHub and 'current' means the current version.
 func UpdateSelf(current semver.Version, slug string) (*Release, error) {
-	return UpdateCommand(os.Args[0], current, slug)
+	cmdPath, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	return UpdateCommand(cmdPath, current, slug)
 }
