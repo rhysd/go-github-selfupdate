@@ -44,6 +44,18 @@ func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Releas
 		cmdPath = cmdPath + ".exe"
 	}
 
+	stat, err := os.Lstat(cmdPath)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to stat '%s'. File may not exist: %s", cmdPath, err)
+	}
+	if stat.Mode()&os.ModeSymlink != 0 {
+		p, err := filepath.EvalSymlinks(cmdPath)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to resolve symlink '%s' for executable: %s", cmdPath, err)
+		}
+		cmdPath = p
+	}
+
 	rel, ok, err := DetectLatest(slug)
 	if err != nil {
 		return nil, err

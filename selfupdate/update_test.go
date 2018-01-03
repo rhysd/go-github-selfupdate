@@ -63,6 +63,83 @@ func TestUpdateCommand(t *testing.T) {
 	}
 }
 
+func TestUpdateViaSymlink(t *testing.T) {
+	setupTestBinary()
+	defer teardownTestBinary()
+	if err := os.Symlink("github-release-test", "github-release-test-sym"); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove("github-release-test-sym")
+
+	latest := semver.MustParse("1.2.3")
+	prev := semver.MustParse("1.2.2")
+	rel, err := UpdateCommand("github-release-test-sym", prev, "rhysd-test/test-release-zip")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rel.Version.NE(latest) {
+		t.Error("Version is not latest", rel.Version)
+	}
+
+	// Test not symbolic link, but actual physical executable
+	bytes, err := exec.Command(filepath.FromSlash("./github-release-test")).Output()
+	if err != nil {
+		t.Fatal("Failed to run test binary after update:", err)
+	}
+	out := string(bytes)
+	if out != "v1.2.3\n" {
+		t.Error("Output from test binary after update is unexpected:", out)
+	}
+
+	s, err := os.Lstat("github-release-test-sym")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.Mode()&os.ModeSymlink == 0 {
+		t.Fatalf("%s is not a symlink.", "github-release-test-sym")
+	}
+	p, err := filepath.EvalSymlinks("github-release-test-sym")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p != "github-release-test" {
+		t.Fatalf("Created symlink no loger points the executable")
+	}
+}
+
+func TestUpdateBrokenSymlinks(t *testing.T) {
+	// unknown-xxx -> unknown-yyy -> {not existing}
+	if err := os.Symlink("not-existing", "unknown-yyy"); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove("unknown-yyy")
+	if err := os.Symlink("unknown-yyy", "unknown-xxx"); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove("unknown-xxx")
+
+	v := semver.MustParse("1.2.2")
+	for _, p := range []string{"unknown-yyy", "unknown-xxx"} {
+		_, err := UpdateCommand("unknown-yyy", v, "owner/repo")
+		if err == nil {
+			t.Fatal("Error should occur for unlinked symlink", p)
+		}
+		if !strings.Contains(err.Error(), "Failed to resolve symlink") {
+			t.Fatal("Unexpected error for broken symlink", p, err)
+		}
+	}
+}
+
+func TestNotExistingCommandPath(t *testing.T) {
+	_, err := UpdateCommand("not-existing-command-path", semver.MustParse("1.2.2"), "owner/repo")
+	if err == nil {
+		t.Fatal("Not existing command path should cause an error")
+	}
+	if !strings.Contains(err.Error(), "File may not exist") {
+		t.Fatal("Unexpected error for not existing command path", err)
+	}
+}
+
 func TestNoReleaseFoundForUpdate(t *testing.T) {
 	v := semver.MustParse("1.0.0")
 	rel, err := UpdateCommand("foo", v, "rhysd/misc")
