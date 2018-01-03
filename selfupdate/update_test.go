@@ -37,6 +37,7 @@ func TestUpdateCommand(t *testing.T) {
 		"rhysd-test/test-release-gzip",
 		"rhysd-test/test-release-tar-xz",
 		"rhysd-test/test-release-xz",
+		"rhysd-test/test-release-contain-version",
 	} {
 		t.Run(slug, func(t *testing.T) {
 			setupTestBinary()
