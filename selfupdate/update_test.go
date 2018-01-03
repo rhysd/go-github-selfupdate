@@ -116,7 +116,7 @@ func TestUpdateViaSymlink(t *testing.T) {
 		t.Fatal(err)
 	}
 	if p != exePath {
-		t.Fatalf("Created symlink no loger points the executable")
+		t.Fatal("Created symlink no loger points the executable:", p)
 	}
 }
 
@@ -143,7 +143,7 @@ func TestUpdateBrokenSymlinks(t *testing.T) {
 
 	v := semver.MustParse("1.2.2")
 	for _, p := range []string{yyy, xxx} {
-		_, err := UpdateCommand(yyy, v, "owner/repo")
+		_, err := UpdateCommand(p, v, "owner/repo")
 		if err == nil {
 			t.Fatal("Error should occur for unlinked symlink", p)
 		}
