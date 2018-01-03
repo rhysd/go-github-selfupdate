@@ -67,20 +67,26 @@ func TestUpdateViaSymlink(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skip tests in short mode.")
 	}
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" && os.Getenv("APPVEYOR") == "" {
 		t.Skip("skipping because creating symlink on windows requires the root privilege")
 	}
 
 	setupTestBinary()
 	defer teardownTestBinary()
-	if err := os.Symlink("github-release-test", "github-release-test-sym"); err != nil {
+	exePath := "github-release-test"
+	symPath := "github-release-test-sym"
+	if runtime.GOOS == "windows" {
+		exePath = "github-release-test.exe"
+		symPath = "github-release-test-sym.exe"
+	}
+	if err := os.Symlink(exePath, symPath); err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove("github-release-test-sym")
+	defer os.Remove(symPath)
 
 	latest := semver.MustParse("1.2.3")
 	prev := semver.MustParse("1.2.2")
-	rel, err := UpdateCommand("github-release-test-sym", prev, "rhysd-test/test-release-zip")
+	rel, err := UpdateCommand(symPath, prev, "rhysd-test/test-release-zip")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,40 +104,46 @@ func TestUpdateViaSymlink(t *testing.T) {
 		t.Error("Output from test binary after update is unexpected:", out)
 	}
 
-	s, err := os.Lstat("github-release-test-sym")
+	s, err := os.Lstat(symPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if s.Mode()&os.ModeSymlink == 0 {
-		t.Fatalf("%s is not a symlink.", "github-release-test-sym")
+		t.Fatalf("%s is not a symlink.", symPath)
 	}
-	p, err := filepath.EvalSymlinks("github-release-test-sym")
+	p, err := filepath.EvalSymlinks(symPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p != "github-release-test" {
+	if p != exePath {
 		t.Fatalf("Created symlink no loger points the executable")
 	}
 }
 
 func TestUpdateBrokenSymlinks(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" && os.Getenv("APPVEYOR") == "" {
 		t.Skip("skipping because creating symlink on windows requires the root privilege")
 	}
 
 	// unknown-xxx -> unknown-yyy -> {not existing}
-	if err := os.Symlink("not-existing", "unknown-yyy"); err != nil {
+	xxx := "unknown-xxx"
+	yyy := "unknown-yyy"
+	if runtime.GOOS == "windows" {
+		xxx = "unknown-xxx.exe"
+		yyy = "unknown-yyy.exe"
+	}
+	if err := os.Symlink("not-existing", yyy); err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove("unknown-yyy")
-	if err := os.Symlink("unknown-yyy", "unknown-xxx"); err != nil {
+	defer os.Remove(yyy)
+	if err := os.Symlink(yyy, xxx); err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove("unknown-xxx")
+	defer os.Remove(xxx)
 
 	v := semver.MustParse("1.2.2")
-	for _, p := range []string{"unknown-yyy", "unknown-xxx"} {
-		_, err := UpdateCommand("unknown-yyy", v, "owner/repo")
+	for _, p := range []string{yyy, xxx} {
+		_, err := UpdateCommand(yyy, v, "owner/repo")
 		if err == nil {
 			t.Fatal("Error should occur for unlinked symlink", p)
 		}
