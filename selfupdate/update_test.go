@@ -64,6 +64,13 @@ func TestUpdateCommand(t *testing.T) {
 }
 
 func TestUpdateViaSymlink(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skip tests in short mode.")
+	}
+	if runtime.GOOS == "windows" {
+		t.Skip("skipping because creating symlink on windows requires the root privilege")
+	}
+
 	setupTestBinary()
 	defer teardownTestBinary()
 	if err := os.Symlink("github-release-test", "github-release-test-sym"); err != nil {
@@ -108,6 +115,10 @@ func TestUpdateViaSymlink(t *testing.T) {
 }
 
 func TestUpdateBrokenSymlinks(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("skipping because creating symlink on windows requires the root privilege")
+	}
+
 	// unknown-xxx -> unknown-yyy -> {not existing}
 	if err := os.Symlink("not-existing", "unknown-yyy"); err != nil {
 		t.Fatal(err)
@@ -142,7 +153,8 @@ func TestNotExistingCommandPath(t *testing.T) {
 
 func TestNoReleaseFoundForUpdate(t *testing.T) {
 	v := semver.MustParse("1.0.0")
-	rel, err := UpdateCommand("foo", v, "rhysd/misc")
+	fake := filepath.FromSlash("./testdata/fake-executable")
+	rel, err := UpdateCommand(fake, v, "rhysd/misc")
 	if err != nil {
 		t.Fatal("No release should not make an error:", err)
 	}
@@ -161,6 +173,12 @@ func TestNoReleaseFoundForUpdate(t *testing.T) {
 }
 
 func TestCurrentIsTheLatest(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skip tests in short mode.")
+	}
+	setupTestBinary()
+	defer teardownTestBinary()
+
 	v := semver.MustParse("1.2.3")
 	rel, err := UpdateCommand("github-release-test", v, "rhysd-test/test-release-zip")
 	if err != nil {
@@ -185,7 +203,8 @@ func TestBrokenBinaryUpdate(t *testing.T) {
 		t.Skip("skip tests in short mode.")
 	}
 
-	_, err := UpdateCommand("foo", semver.MustParse("1.2.2"), "rhysd-test/test-incorrect-release")
+	fake := filepath.FromSlash("./testdata/fake-executable")
+	_, err := UpdateCommand(fake, semver.MustParse("1.2.2"), "rhysd-test/test-incorrect-release")
 	if err == nil {
 		t.Fatal("Error should occur for broken package")
 	}
@@ -195,7 +214,8 @@ func TestBrokenBinaryUpdate(t *testing.T) {
 }
 
 func TestInvalidSlugForUpdate(t *testing.T) {
-	_, err := UpdateCommand("foo", semver.MustParse("1.0.0"), "rhysd/")
+	fake := filepath.FromSlash("./testdata/fake-executable")
+	_, err := UpdateCommand(fake, semver.MustParse("1.0.0"), "rhysd/")
 	if err == nil {
 		t.Fatal("Unknown repo should cause an error")
 	}
