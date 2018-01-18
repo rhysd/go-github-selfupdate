@@ -3,14 +3,16 @@ package selfupdate
 import (
 	"context"
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 	"net/http"
 	"os"
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/blang/semver"
+	"github.com/google/go-github/github"
+	gitconfig "github.com/tcnksm/go-gitconfig"
+	"golang.org/x/oauth2"
 )
 
 var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
@@ -65,6 +67,9 @@ func findSuitableReleaseAndAsset(rels []*github.RepositoryRelease) (*github.Repo
 // NewDetector crates a new detector instance. It initializes GitHub API client.
 func NewDetector() *ReleaseDetector {
 	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		token, _ = gitconfig.GithubToken()
+	}
 	ctx := context.Background()
 
 	var auth *http.Client
