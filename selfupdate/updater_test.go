@@ -18,3 +18,43 @@ func TestGitHubTokenEnv(t *testing.T) {
 		t.Error("Failed to initialize updater with API token config")
 	}
 }
+
+func TestGitHubEnterpriseClient(t *testing.T) {
+	url := "https://github.company.com/api/v3/"
+	up, err := NewUpdater(Config{APIToken: "hogehoge", EnterpriseBaseURL: url})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if up.api.BaseURL.String() != url {
+		t.Error("Base URL was set to", up.api.BaseURL, ", want", url)
+	}
+	if up.api.UploadURL.String() != url {
+		t.Error("Upload URL was set to", up.api.UploadURL, ", want", url)
+	}
+
+	url2 := "https://upload.github.company.com/api/v3/"
+	up, err = NewUpdater(Config{
+		APIToken:            "hogehoge",
+		EnterpriseBaseURL:   url,
+		EnterpriseUploadURL: url2,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if up.api.BaseURL.String() != url {
+		t.Error("Base URL was set to", up.api.BaseURL, ", want", url)
+	}
+	if up.api.UploadURL.String() != url2 {
+		t.Error("Upload URL was set to", up.api.UploadURL, ", want", url2)
+	}
+}
+
+func TestGitHubEnterpriseClientWithoutToken(t *testing.T) {
+	token := os.Getenv("GITHUB_TOKEN")
+	defer os.Setenv("GITHUB_TOKEN", token)
+	os.Setenv("GITHUB_TOKEN", "")
+	_, err := NewUpdater(Config{EnterpriseBaseURL: "https://github.company.com/api/v3/"})
+	if err == nil {
+		t.Fatal("Error should be reported because of empty token")
+	}
+}
