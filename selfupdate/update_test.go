@@ -270,3 +270,47 @@ func TestBrokenGitHubEnterpriseURL(t *testing.T) {
 		t.Error("Unexpected error occurred:", err)
 	}
 }
+
+func TestUpdateFromGitHubEnterprise(t *testing.T) {
+	token := os.Getenv("GITHUB_ENTERPRISE_TOKEN")
+	base := os.Getenv("GITHUB_ENTERPRISE_BASE_URL")
+	repo := os.Getenv("GITHUB_ENTERPRISE_REPO")
+	if token == "" {
+		t.Skip("because token for GHE is not found")
+	}
+	if base == "" {
+		t.Skip("because base URL for GHE is not found")
+	}
+	if repo == "" {
+		t.Skip("because repo slug for GHE is not found")
+	}
+
+	setupTestBinary()
+	defer teardownTestBinary()
+
+	up, err := NewUpdater(Config{APIToken: token, EnterpriseBaseURL: base})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	latest := semver.MustParse("1.2.3")
+	prev := semver.MustParse("1.2.2")
+	rel, err := up.UpdateCommand("github-release-test", prev, repo)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if rel.Version.NE(latest) {
+		t.Error("Version is not latest", rel.Version)
+	}
+
+	bytes, err := exec.Command(filepath.FromSlash("./github-release-test")).Output()
+	if err != nil {
+		t.Fatal("Failed to run test binary after update:", err)
+	}
+
+	out := string(bytes)
+	if out != "v1.2.3\n" {
+		t.Error("Output from test binary after update is unexpected:", out)
+	}
+}

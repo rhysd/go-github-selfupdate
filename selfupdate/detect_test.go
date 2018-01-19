@@ -3,6 +3,7 @@ package selfupdate
 import (
 	"fmt"
 	"github.com/blang/semver"
+	"os"
 	"strings"
 	"testing"
 )
@@ -175,5 +176,39 @@ func TestDetectFromBrokenGitHubEnterpriseURL(t *testing.T) {
 	_, ok, _ := up.DetectLatest("foo/bar")
 	if ok {
 		t.Fatal("Invalid GitHub Enterprise base URL should raise an error")
+	}
+}
+
+func TestDetectFromGitHubEnterpriseRepo(t *testing.T) {
+	token := os.Getenv("GITHUB_ENTERPRISE_TOKEN")
+	base := os.Getenv("GITHUB_ENTERPRISE_BASE_URL")
+	repo := os.Getenv("GITHUB_ENTERPRISE_REPO")
+	if token == "" {
+		t.Skip("because token for GHE is not found")
+	}
+	if base == "" {
+		t.Skip("because base URL for GHE is not found")
+	}
+	if repo == "" {
+		t.Skip("because repo slug for GHE is not found")
+	}
+
+	up, err := NewUpdater(Config{APIToken: token, EnterpriseBaseURL: base})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r, ok, err := up.DetectLatest(repo)
+	if err != nil {
+		t.Fatal("Fetch failed:", err)
+	}
+	if !ok {
+		t.Fatal(repo, "not found")
+	}
+	if r == nil {
+		t.Fatal("Release not detected")
+	}
+	if !r.Version.Equals(semver.MustParse("1.2.3")) {
+		t.Error("")
 	}
 }
