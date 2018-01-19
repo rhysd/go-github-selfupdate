@@ -46,7 +46,7 @@ func (up *Updater) downloadDirectlyFromURL(assetURL string) (io.ReadCloser, erro
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("Failed to download a release file from %s: Not successfull status %d", assetURL, res.StatusCode)
+		return nil, fmt.Errorf("Failed to download a release file from %s: Not successful status %d", assetURL, res.StatusCode)
 	}
 
 	return res.Body, nil
