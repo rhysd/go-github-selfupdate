@@ -237,7 +237,7 @@ func TestInvalidSlugForUpdate(t *testing.T) {
 }
 
 func TestInvalidAssetURL(t *testing.T) {
-	err := NewUpdater(Config{}).UpdateTo("https://github.com/rhysd/non-existing-repo/releases/download/v1.2.3/foo.zip", "foo")
+	err := UpdateTo("https://github.com/rhysd/non-existing-repo/releases/download/v1.2.3/foo.zip", "foo")
 	if err == nil {
 		t.Fatal("Error should occur for URL not found")
 	}
@@ -248,7 +248,7 @@ func TestInvalidAssetURL(t *testing.T) {
 
 func TestBrokenAsset(t *testing.T) {
 	asset := "https://github.com/rhysd-test/test-incorrect-release/releases/download/invalid/broken-zip.zip"
-	err := NewUpdater(Config{}).UpdateTo(asset, "foo")
+	err := UpdateTo(asset, "foo")
 	if err == nil {
 		t.Fatal("Error should occur for URL not found")
 	}

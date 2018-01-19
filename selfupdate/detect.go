@@ -92,10 +92,13 @@ func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err 
 	release = &Release{
 		AssetURL:      url,
 		AssetByteSize: asset.GetSize(),
+		AssetID:       asset.GetID(),
 		URL:           rel.GetHTMLURL(),
 		ReleaseNotes:  rel.GetBody(),
 		Name:          rel.GetName(),
 		PublishedAt:   &publishedAt,
+		RepoOwner:     repo[0],
+		RepoName:      repo[1],
 	}
 
 	release.Version, err = semver.Make(tag)

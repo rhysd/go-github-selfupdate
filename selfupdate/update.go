@@ -2,6 +2,7 @@ package selfupdate
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -12,10 +13,26 @@ import (
 	"github.com/inconshreveable/go-update"
 )
 
-// UpdateTo download an executable from assetURL and replace the current binary with the downloaded one. cmdPath is a file path to command executable.
-func (up *Updater) UpdateTo(assetURL, cmdPath string) error {
-	// TODO: Use GitHub API client to download assets
+func readAndUpdate(src io.ReadCloser, assetURL, cmdPath string) error {
+	defer src.Close()
 
+	_, cmd := filepath.Split(cmdPath)
+	asset, err := UncompressCommand(src, assetURL, cmd)
+	if err != nil {
+		return err
+	}
+
+	log.Println("Will update", cmdPath, "to the latest downloaded from", assetURL)
+	return update.Apply(asset, update.Options{
+		TargetPath: cmdPath,
+	})
+}
+
+// UpdateTo downloads an executable from assetURL and replace the current binary with the downloaded one.
+// This function is low-level API to update the binary. Because it does not use GitHub API and downloads asset directly from the URL via HTTP,
+// this function is not available to update a release for private repositories.
+// cmdPath is a file path to command executable.
+func UpdateTo(assetURL, cmdPath string) error {
 	res, err := http.Get(assetURL)
 	if err != nil {
 		return fmt.Errorf("Failed to download a release file from %s: %s", assetURL, err)
@@ -25,17 +42,22 @@ func (up *Updater) UpdateTo(assetURL, cmdPath string) error {
 		return fmt.Errorf("Failed to download a release file from %s", assetURL)
 	}
 
-	defer res.Body.Close()
-	_, cmd := filepath.Split(cmdPath)
-	asset, err := UncompressCommand(res.Body, assetURL, cmd)
+	return readAndUpdate(res.Body, assetURL, cmdPath)
+}
+
+// UpdateTo downloads an executable from GitHub Releases API and replace current binary with the downloaded one.
+// It downloads a release asset via GitHub Releases API so this function is available for update releases on private repository.
+// If a redirect occurs, it fallbacks into directly downloading from the redirect URL.
+func (up *Updater) UpdateTo(rel *Release, cmdPath string) error {
+	src, redirectURL, err := up.api.Repositories.DownloadReleaseAsset(up.apiCtx, rel.RepoOwner, rel.RepoName, rel.AssetID)
 	if err != nil {
 		return err
 	}
-
-	log.Println("Will update", cmdPath, "to the latest downloaded from", assetURL)
-	return update.Apply(asset, update.Options{
-		TargetPath: cmdPath,
-	})
+	if redirectURL != "" {
+		log.Println("Redirect URL was returned while trying to download a release asset from GitHub API. Falling back to downloading from asset URL directly:", redirectURL)
+		return UpdateTo(redirectURL, cmdPath)
+	}
+	return readAndUpdate(src, rel.AssetURL, cmdPath)
 }
 
 // UpdateCommand updates a given command binary to the latest version.
@@ -71,7 +93,7 @@ func (up *Updater) UpdateCommand(cmdPath string, current semver.Version, slug st
 		return rel, nil
 	}
 	log.Println("Will update", cmdPath, "to the latest version", rel.Version)
-	if err := up.UpdateTo(rel.AssetURL, cmdPath); err != nil {
+	if err := up.UpdateTo(rel, cmdPath); err != nil {
 		return nil, err
 	}
 	return rel, nil
