@@ -26,6 +26,8 @@ If newer version than itself is detected, it downloads released binary from GitH
 - Update the binary with rollback support on failure
 - Tested on Linux, macOS and Windows (using Travis CI and AppVeyor)
 - Many archive and compression formats are supported (zip, tar, gzip, xzip)
+- Support private repositories
+- Support [GitHub Enterprise][]
 
 And small wrapper CLIs are provided:
 
@@ -81,6 +83,9 @@ It provides `selfupdate` package.
 - `selfupdate.UpdateCommand()`: Detect the latest version of given repository and update given command.
 - `selfupdate.DetectLatest()`: Detect the latest version of given repository.
 - `selfupdate.UpdateTo()`: Update given command to the binary hosted on given URL.
+- `selfupdate.Updater`: Context manager of self-upadte process. If you want to customize some behavior
+  of self-update (e.g. specify API token, use GitHub Enterprise, ...), please make an instance of
+  `Updater` and use its methods.
 
 Following is the easiest way to use this package.
 
@@ -154,7 +159,54 @@ func confirmAndSelfUpdate() {
 }
 ```
 
+If GitHub API token is set to `[token]` section in `gitconfig` or `$GITHUB_TOKEN` environment variable,
+this library will use it to call GitHub REST API. It's useful when reaching rate limits or when using
+this library with private repositories.
+
 Please see [the documentation page][GoDoc] for more detail.
+
+This library should work with [GitHub Enterprise][]. To configure API base URL, please setup `Updater`
+instance and use its method instead (Actually all functions above are just a shortcuts of methods of
+`Updater` instance).
+
+Following is an example of usage with GitHub Enterprise.
+
+```go
+import (
+    "log"
+    "github.com/blang/semver"
+    "github.com/rhysd/go-github-selfupdate/selfupdate"
+)
+
+const version = "1.2.3"
+
+func doSelfUpdate(token string) {
+    v := semver.MustParse(version)
+    up, err := selfupdate.NewUpdater(selfupdate.Config{
+        APIToken: token,
+        EnterpriseBaseURL: "https://github.your.company.com/api/v3",
+    })
+    latest, err := up.UpdateSelf(v, "myname/myrepo")
+    if err != nil {
+        log.Println("Binary update failed:", err)
+        return
+    }
+    if latest.Version.Equals(v) {
+        // latest version is the same as current version. It means current binary is up to date.
+        log.Println("Current binary is the latest version", version)
+    } else {
+        log.Println("Successfully updated to version", latest.Version)
+        log.Println("Release note:\n", latest.ReleaseNotes)
+    }
+}
+```
+
+If `APIToken` field is not given, it tries to retrieve API token from `[token]` section of `.gitconfig`
+or `$GITHUB_TOKEN` environment variable. If no token is found, it raises an error because GitHub Enterprise
+API does not work without authentication.
+
+If your GitHub Enterprise instance's upload URL is different from the base URL, please also set `EnterpriseUploadURL`
+field
 
 ### Naming Rules of Released Binaries
 
@@ -279,3 +331,4 @@ Distributed under the [MIT License](LICENSE)
 [AppVeyor]: https://ci.appveyor.com/project/rhysd/go-github-selfupdate/branch/master
 [Codecov Status]: https://codecov.io/gh/rhysd/go-github-selfupdate/branch/master/graph/badge.svg
 [Codecov]: https://codecov.io/gh/rhysd/go-github-selfupdate
+[GitHub Enterprise]: https://enterprise.github.com/home

@@ -1,27 +1,16 @@
 package selfupdate
 
 import (
-	"context"
 	"fmt"
-	"net/http"
-	"os"
 	"regexp"
 	"runtime"
 	"strings"
 
 	"github.com/blang/semver"
 	"github.com/google/go-github/github"
-	gitconfig "github.com/tcnksm/go-gitconfig"
-	"golang.org/x/oauth2"
 )
 
 var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
-
-// ReleaseDetector is responsible for detecting the latest release using GitHub Releases API.
-type ReleaseDetector struct {
-	api    *github.Client
-	apiCtx context.Context
-}
 
 func findSuitableReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRelease, *github.ReleaseAsset, bool) {
 	// Generate candidates
@@ -64,33 +53,15 @@ func findSuitableReleaseAndAsset(rels []*github.RepositoryRelease) (*github.Repo
 	return nil, nil, false
 }
 
-// NewDetector crates a new detector instance. It initializes GitHub API client.
-func NewDetector() *ReleaseDetector {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		token, _ = gitconfig.GithubToken()
-	}
-	ctx := context.Background()
-
-	var auth *http.Client
-	if token != "" {
-		src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-		auth = oauth2.NewClient(ctx, src)
-	}
-
-	client := github.NewClient(auth)
-	return &ReleaseDetector{client, ctx}
-}
-
 // DetectLatest tries to get the latest version of the repository on GitHub. 'slug' means 'owner/name' formatted string.
-func (d *ReleaseDetector) DetectLatest(slug string) (release *Release, found bool, err error) {
+func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err error) {
 	repo := strings.Split(slug, "/")
 	if len(repo) != 2 || repo[0] == "" || repo[1] == "" {
 		err = fmt.Errorf("Invalid slug format. It should be 'owner/name': %s", slug)
 		return
 	}
 
-	rels, res, err := d.api.Repositories.ListReleases(d.apiCtx, repo[0], repo[1], nil)
+	rels, res, err := up.api.Repositories.ListReleases(up.apiCtx, repo[0], repo[1], nil)
 	if err != nil {
 		log.Println("API returned an error response:", err)
 		if res != nil && res.StatusCode == 404 {
@@ -121,10 +92,13 @@ func (d *ReleaseDetector) DetectLatest(slug string) (release *Release, found boo
 	release = &Release{
 		AssetURL:      url,
 		AssetByteSize: asset.GetSize(),
+		AssetID:       asset.GetID(),
 		URL:           rel.GetHTMLURL(),
 		ReleaseNotes:  rel.GetBody(),
 		Name:          rel.GetName(),
 		PublishedAt:   &publishedAt,
+		RepoOwner:     repo[0],
+		RepoName:      repo[1],
 	}
 
 	release.Version, err = semver.Make(tag)
@@ -133,5 +107,5 @@ func (d *ReleaseDetector) DetectLatest(slug string) (release *Release, found boo
 
 // DetectLatest detects the latest release of the slug (owner/repo).
 func DetectLatest(slug string) (*Release, bool, error) {
-	return NewDetector().DetectLatest(slug)
+	return DefaultUpdater().DetectLatest(slug)
 }

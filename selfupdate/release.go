@@ -13,6 +13,8 @@ type Release struct {
 	AssetURL string
 	// AssetSize represents the size of asset in bytes
 	AssetByteSize int
+	// AssetID is the ID of the asset on GitHub
+	AssetID int
 	// URL is a URL to release page for browsing
 	URL string
 	// ReleaseNotes is a release notes of the release
@@ -21,4 +23,8 @@ type Release struct {
 	Name string
 	// PublishedAt is the time when the release was published
 	PublishedAt *time.Time
+	// RepoOwner is the owner of the repository of the release
+	RepoOwner string
+	// RepoName is the name of the repository of the release
+	RepoName string
 }

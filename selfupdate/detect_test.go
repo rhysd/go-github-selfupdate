@@ -8,14 +8,6 @@ import (
 	"testing"
 )
 
-func TestGitHubTokenEnv(t *testing.T) {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		t.Skip("because $GITHUB_TOKEN is not set")
-	}
-	_ = NewDetector()
-}
-
 func TestDetectReleaseWithVersionPrefix(t *testing.T) {
 	r, ok, err := DetectLatest("rhysd/github-clone-all")
 	if err != nil {
@@ -45,8 +37,17 @@ func TestDetectReleaseWithVersionPrefix(t *testing.T) {
 	if r.AssetByteSize == 0 {
 		t.Error("Asset's size is unexpectedly zero")
 	}
+	if r.AssetID == 0 {
+		t.Error("Asset's ID is unexpectedly zero")
+	}
 	if r.PublishedAt.IsZero() {
 		t.Error("Release time is unexpectedly zero")
+	}
+	if r.RepoOwner != "rhysd" {
+		t.Error("Repo owner is not correct:", r.RepoOwner)
+	}
+	if r.RepoName != "github-clone-all" {
+		t.Error("Repo name was not properly detectd:", r.RepoName)
 	}
 }
 
@@ -91,8 +92,17 @@ func TestDetectReleasesForVariousArchives(t *testing.T) {
 			if r.AssetByteSize == 0 {
 				t.Error("Asset's size is unexpectedly zero")
 			}
+			if r.AssetID == 0 {
+				t.Error("Asset's ID is unexpectedly zero")
+			}
 			if r.PublishedAt.IsZero() {
 				t.Error("Release time is unexpectedly zero")
+			}
+			if r.RepoOwner != "rhysd-test" {
+				t.Error("Repo owner should be rhysd-test:", r.RepoOwner)
+			}
+			if !strings.HasPrefix(r.RepoName, "test-release-") {
+				t.Error("Repo name was not properly detectd:", r.RepoName)
 			}
 		})
 	}
@@ -119,7 +129,7 @@ func TestDetectNoRelease(t *testing.T) {
 }
 
 func TestInvalidSlug(t *testing.T) {
-	d := NewDetector()
+	up := DefaultUpdater()
 
 	for _, slug := range []string{
 		"foo",
@@ -128,7 +138,7 @@ func TestInvalidSlug(t *testing.T) {
 		"/bar",
 		"foo/bar/piyo",
 	} {
-		_, _, err := d.DetectLatest(slug)
+		_, _, err := up.DetectLatest(slug)
 		if err == nil {
 			t.Error(slug, "should be invalid slug")
 		}
@@ -139,8 +149,7 @@ func TestInvalidSlug(t *testing.T) {
 }
 
 func TestNonExistingRepo(t *testing.T) {
-	d := NewDetector()
-	v, ok, err := d.DetectLatest("rhysd/non-existing-repo")
+	v, ok, err := DetectLatest("rhysd/non-existing-repo")
 	if err != nil {
 		t.Fatal("Non-existing repo should not cause an error:", v)
 	}
@@ -150,12 +159,56 @@ func TestNonExistingRepo(t *testing.T) {
 }
 
 func TestNoReleaseFound(t *testing.T) {
-	d := NewDetector()
-	_, ok, err := d.DetectLatest("rhysd/misc")
+	_, ok, err := DetectLatest("rhysd/misc")
 	if err != nil {
 		t.Fatal("Repo having no release should not cause an error:", err)
 	}
 	if ok {
 		t.Fatal("Repo having no release should not be found")
+	}
+}
+
+func TestDetectFromBrokenGitHubEnterpriseURL(t *testing.T) {
+	up, err := NewUpdater(Config{APIToken: "hogehoge", EnterpriseBaseURL: "https://example.com"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, ok, _ := up.DetectLatest("foo/bar")
+	if ok {
+		t.Fatal("Invalid GitHub Enterprise base URL should raise an error")
+	}
+}
+
+func TestDetectFromGitHubEnterpriseRepo(t *testing.T) {
+	token := os.Getenv("GITHUB_ENTERPRISE_TOKEN")
+	base := os.Getenv("GITHUB_ENTERPRISE_BASE_URL")
+	repo := os.Getenv("GITHUB_ENTERPRISE_REPO")
+	if token == "" {
+		t.Skip("because token for GHE is not found")
+	}
+	if base == "" {
+		t.Skip("because base URL for GHE is not found")
+	}
+	if repo == "" {
+		t.Skip("because repo slug for GHE is not found")
+	}
+
+	up, err := NewUpdater(Config{APIToken: token, EnterpriseBaseURL: base})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r, ok, err := up.DetectLatest(repo)
+	if err != nil {
+		t.Fatal("Fetch failed:", err)
+	}
+	if !ok {
+		t.Fatal(repo, "not found")
+	}
+	if r == nil {
+		t.Fatal("Release not detected")
+	}
+	if !r.Version.Equals(semver.MustParse("1.2.3")) {
+		t.Error("")
 	}
 }
