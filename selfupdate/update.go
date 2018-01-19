@@ -35,13 +35,18 @@ func (up *Updater) downloadDirectlyFromURL(assetURL string) (io.ReadCloser, erro
 	}
 
 	req.Header.Add("Accept", "application/octet-stream")
-	res, err := up.httpClient.Do(req)
+	req = req.WithContext(up.apiCtx)
+
+	// OAuth HTTP client is not available to download blob from URL when the URL is a redirect URL
+	// returned from GitHub Releases API (response status 400).
+	// Use default HTTP client instead.
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to download a release file from %s: %s", assetURL, err)
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("Failed to download a release file from %s", assetURL)
+		return nil, fmt.Errorf("Failed to download a release file from %s: Not successfull status %d", assetURL, res.StatusCode)
 	}
 
 	return res.Body, nil
