@@ -58,3 +58,10 @@ func TestGitHubEnterpriseClientWithoutToken(t *testing.T) {
 		t.Fatal("Error should be reported because of empty token")
 	}
 }
+
+func TestGitHubEnterpriseClientInvalidURL(t *testing.T) {
+	_, err := NewUpdater(Config{APIToken: "hogehoge", EnterpriseBaseURL: ":this is not a URL"})
+	if err == nil {
+		t.Fatal("Invalid URL should raise an error")
+	}
+}

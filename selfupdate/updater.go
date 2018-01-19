@@ -52,22 +52,21 @@ func NewUpdater(config Config) (*Updater, error) {
 	ctx := context.Background()
 	hc := newHTTPClient(ctx, token)
 
-	var client *github.Client
 	if config.EnterpriseBaseURL == "" {
-		client = github.NewClient(hc)
-	} else {
-		if token == "" {
-			return nil, errors.New("GitHub API token cannot be empty when releases are hosted on GitHub Enterprise instance")
-		}
-		u := config.EnterpriseUploadURL
-		if u == "" {
-			u = config.EnterpriseBaseURL
-		}
-		var err error
-		client, err = github.NewEnterpriseClient(config.EnterpriseBaseURL, u, hc)
-		if err != nil {
-			return nil, err
-		}
+		client := github.NewClient(hc)
+		return &Updater{client, ctx, hc}, nil
+	}
+
+	if token == "" {
+		return nil, errors.New("GitHub API token cannot be empty when releases are hosted on GitHub Enterprise instance")
+	}
+	u := config.EnterpriseUploadURL
+	if u == "" {
+		u = config.EnterpriseBaseURL
+	}
+	client, err := github.NewEnterpriseClient(config.EnterpriseBaseURL, u, hc)
+	if err != nil {
+		return nil, err
 	}
 	return &Updater{client, ctx, hc}, nil
 }

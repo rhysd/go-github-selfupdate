@@ -166,3 +166,14 @@ func TestNoReleaseFound(t *testing.T) {
 		t.Fatal("Repo having no release should not be found")
 	}
 }
+
+func TestDetectFromBrokenGitHubEnterpriseURL(t *testing.T) {
+	up, err := NewUpdater(Config{APIToken: "hogehoge", EnterpriseBaseURL: "https://example.com"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, ok, _ := up.DetectLatest("foo/bar")
+	if ok {
+		t.Fatal("Invalid GitHub Enterprise base URL should raise an error")
+	}
+}

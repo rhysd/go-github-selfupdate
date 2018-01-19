@@ -256,3 +256,17 @@ func TestBrokenAsset(t *testing.T) {
 		t.Fatal("Unexpected error:", err)
 	}
 }
+
+func TestBrokenGitHubEnterpriseURL(t *testing.T) {
+	up, err := NewUpdater(Config{APIToken: "hogehoge", EnterpriseBaseURL: "https://example.com"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = up.UpdateTo(&Release{AssetURL: "https://example.com"}, "foo")
+	if err == nil {
+		t.Fatal("Invalid GitHub Enterprise base URL should raise an error")
+	}
+	if !strings.Contains(err.Error(), "Failed to call GitHub Releases API for getting an asset") {
+		t.Error("Unexpected error occurred:", err)
+	}
+}

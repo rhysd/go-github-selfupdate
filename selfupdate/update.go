@@ -58,7 +58,7 @@ func (up *Updater) downloadDirectlyFromURL(assetURL string) (io.ReadCloser, erro
 func (up *Updater) UpdateTo(rel *Release, cmdPath string) error {
 	src, redirectURL, err := up.api.Repositories.DownloadReleaseAsset(up.apiCtx, rel.RepoOwner, rel.RepoName, rel.AssetID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to call GitHub Releases API for getting an asset(ID: %d) for repository '%s/%s': %s", rel.AssetID, rel.RepoOwner, rel.RepoName, err)
 	}
 	if redirectURL != "" {
 		log.Println("Redirect URL was returned while trying to download a release asset from GitHub API. Falling back to downloading from asset URL directly:", redirectURL)
