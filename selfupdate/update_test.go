@@ -314,3 +314,39 @@ func TestUpdateFromGitHubEnterprise(t *testing.T) {
 		t.Error("Output from test binary after update is unexpected:", out)
 	}
 }
+
+func TestUpdateFromGitHubPrivateRepo(t *testing.T) {
+	token := os.Getenv("GITHUB_PRIVATE_TOKEN")
+	if token == "" {
+		t.Skip("because GITHUB_PRIVATE_TOKEN is not set")
+	}
+
+	setupTestBinary()
+	defer teardownTestBinary()
+
+	up, err := NewUpdater(Config{APIToken: token})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	latest := semver.MustParse("1.2.3")
+	prev := semver.MustParse("1.2.2")
+	rel, err := up.UpdateCommand("github-release-test", prev, "rhysd/private-release-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if rel.Version.NE(latest) {
+		t.Error("Version is not latest", rel.Version)
+	}
+
+	bytes, err := exec.Command(filepath.FromSlash("./github-release-test")).Output()
+	if err != nil {
+		t.Fatal("Failed to run test binary after update:", err)
+	}
+
+	out := string(bytes)
+	if out != "v1.2.3\n" {
+		t.Error("Output from test binary after update is unexpected:", out)
+	}
+}
