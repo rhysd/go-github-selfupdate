@@ -128,7 +128,7 @@ func TestDetectNoRelease(t *testing.T) {
 }
 
 func TestInvalidSlug(t *testing.T) {
-	up := NewUpdater(Config{})
+	up := DefaultUpdater()
 
 	for _, slug := range []string{
 		"foo",

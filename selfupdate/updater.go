@@ -2,6 +2,7 @@ package selfupdate
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 
@@ -22,11 +23,25 @@ type Updater struct {
 type Config struct {
 	// APIToken represents GitHub API token. If it's not empty, it will be used for authentication of GitHub API
 	APIToken string
-	// TODO: Add host URL for API endpoint
+	// EnterpriseBaseURL is a base URL of GitHub API. If you want to use this library with GitHub Enterprise,
+	// please set "https://{your-organization-address}/api/v3/" to this field.
+	EnterpriseBaseURL string
+	// EnterpriseUploadURL is a URL to upload stuffs to GitHub Enterprise instance. This is often the same as an API base URL.
+	// So if this field is not set and EnterpriseBaseURL is set, EnterpriseBaseURL is also set to this field.
+	EnterpriseUploadURL string
 }
 
-// NewUpdater crates a new detector instance. It initializes GitHub API client.
-func NewUpdater(config Config) *Updater {
+func newHTTPClient(ctx context.Context, token string) *http.Client {
+	if token == "" {
+		return http.DefaultClient
+	}
+	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	return oauth2.NewClient(ctx, src)
+}
+
+// NewUpdater creates a new updater instance. It initializes GitHub API client.
+// If you set your API token to $GITHUB_TOKEN, the client will use it.
+func NewUpdater(config Config) (*Updater, error) {
 	token := config.APIToken
 	if token == "" {
 		token = os.Getenv("GITHUB_TOKEN")
@@ -35,13 +50,37 @@ func NewUpdater(config Config) *Updater {
 		token, _ = gitconfig.GithubToken()
 	}
 	ctx := context.Background()
+	hc := newHTTPClient(ctx, token)
 
-	auth := http.DefaultClient
-	if token != "" {
-		src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-		auth = oauth2.NewClient(ctx, src)
+	var client *github.Client
+	if config.EnterpriseBaseURL == "" {
+		client = github.NewClient(hc)
+	} else {
+		if token == "" {
+			return nil, errors.New("GitHub API token cannot be empty when releases are hosted on GitHub Enterprise instance")
+		}
+		u := config.EnterpriseUploadURL
+		if u == "" {
+			u = config.EnterpriseBaseURL
+		}
+		var err error
+		client, err = github.NewEnterpriseClient(config.EnterpriseBaseURL, u, hc)
+		if err != nil {
+			return nil, err
+		}
 	}
+	return &Updater{client, ctx, hc}, nil
+}
 
-	client := github.NewClient(auth)
-	return &Updater{client, ctx, auth}
+// DefaultUpdater creates a new updater instance with default configuration.
+// It initializes GitHub API client with default API base URL.
+// If you set your API token to $GITHUB_TOKEN, the client will use it.
+func DefaultUpdater() *Updater {
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		token, _ = gitconfig.GithubToken()
+	}
+	ctx := context.Background()
+	client := newHTTPClient(ctx, token)
+	return &Updater{github.NewClient(client), ctx, client}
 }

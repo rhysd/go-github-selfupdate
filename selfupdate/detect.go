@@ -107,5 +107,5 @@ func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err 
 
 // DetectLatest detects the latest release of the slug (owner/repo).
 func DetectLatest(slug string) (*Release, bool, error) {
-	return NewUpdater(Config{}).DetectLatest(slug)
+	return DefaultUpdater().DetectLatest(slug)
 }

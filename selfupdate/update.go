@@ -124,7 +124,7 @@ func (up *Updater) UpdateSelf(current semver.Version, slug string) (*Release, er
 // this function is not available to update a release for private repositories.
 // cmdPath is a file path to command executable.
 func UpdateTo(assetURL, cmdPath string) error {
-	up := NewUpdater(Config{})
+	up := DefaultUpdater()
 	src, err := up.downloadDirectlyFromURL(assetURL)
 	if err != nil {
 		return err
@@ -135,11 +135,11 @@ func UpdateTo(assetURL, cmdPath string) error {
 // UpdateCommand updates a given command binary to the latest version.
 // This function is a shortcut version of updater.UpdateCommand.
 func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Release, error) {
-	return NewUpdater(Config{}).UpdateCommand(cmdPath, current, slug)
+	return DefaultUpdater().UpdateCommand(cmdPath, current, slug)
 }
 
 // UpdateSelf updates the running executable itself to the latest version.
 // This function is a shortcut version of updater.UpdateSelf.
 func UpdateSelf(current semver.Version, slug string) (*Release, error) {
-	return NewUpdater(Config{}).UpdateSelf(current, slug)
+	return DefaultUpdater().UpdateSelf(current, slug)
 }

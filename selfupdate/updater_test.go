@@ -10,6 +10,11 @@ func TestGitHubTokenEnv(t *testing.T) {
 	if token == "" {
 		t.Skip("because $GITHUB_TOKEN is not set")
 	}
-	_ = NewUpdater(Config{})
-	_ = NewUpdater(Config{APIToken: token})
+	_ = DefaultUpdater()
+	if _, err := NewUpdater(Config{}); err != nil {
+		t.Error("Failed to initialize updater with empty config")
+	}
+	if _, err := NewUpdater(Config{APIToken: token}); err != nil {
+		t.Error("Failed to initialize updater with API token config")
+	}
 }
