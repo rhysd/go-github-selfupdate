@@ -13,8 +13,9 @@ import (
 // Updater is responsible for managing the context of self-update.
 // It contains GitHub client and its context.
 type Updater struct {
-	api    *github.Client
-	apiCtx context.Context
+	api        *github.Client
+	apiCtx     context.Context
+	httpClient *http.Client
 }
 
 // Config represents the configuration of self-update.
@@ -35,12 +36,12 @@ func NewUpdater(config Config) *Updater {
 	}
 	ctx := context.Background()
 
-	var auth *http.Client
+	auth := http.DefaultClient
 	if token != "" {
 		src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 		auth = oauth2.NewClient(ctx, src)
 	}
 
 	client := github.NewClient(auth)
-	return &Updater{client, ctx}
+	return &Updater{client, ctx, auth}
 }
