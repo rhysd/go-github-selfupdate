@@ -13,7 +13,9 @@ import (
 )
 
 // UpdateTo download an executable from assetURL and replace the current binary with the downloaded one. cmdPath is a file path to command executable.
-func UpdateTo(assetURL, cmdPath string) error {
+func (up *Updater) UpdateTo(assetURL, cmdPath string) error {
+	// TODO: Use GitHub API client to download assets
+
 	res, err := http.Get(assetURL)
 	if err != nil {
 		return fmt.Errorf("Failed to download a release file from %s: %s", assetURL, err)
@@ -38,7 +40,7 @@ func UpdateTo(assetURL, cmdPath string) error {
 
 // UpdateCommand updates a given command binary to the latest version.
 // 'slug' represents 'owner/name' repository on GitHub and 'current' means the current version.
-func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Release, error) {
+func (up *Updater) UpdateCommand(cmdPath string, current semver.Version, slug string) (*Release, error) {
 	if runtime.GOOS == "windows" && !strings.HasSuffix(cmdPath, ".exe") {
 		// Ensure to add '.exe' to given path on Windows
 		cmdPath = cmdPath + ".exe"
@@ -56,7 +58,7 @@ func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Releas
 		cmdPath = p
 	}
 
-	rel, ok, err := DetectLatest(slug)
+	rel, ok, err := up.DetectLatest(slug)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +71,7 @@ func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Releas
 		return rel, nil
 	}
 	log.Println("Will update", cmdPath, "to the latest version", rel.Version)
-	if err := UpdateTo(rel.AssetURL, cmdPath); err != nil {
+	if err := up.UpdateTo(rel.AssetURL, cmdPath); err != nil {
 		return nil, err
 	}
 	return rel, nil
@@ -77,10 +79,22 @@ func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Releas
 
 // UpdateSelf updates the running executable itself to the latest version.
 // 'slug' represents 'owner/name' repository on GitHub and 'current' means the current version.
-func UpdateSelf(current semver.Version, slug string) (*Release, error) {
+func (up *Updater) UpdateSelf(current semver.Version, slug string) (*Release, error) {
 	cmdPath, err := os.Executable()
 	if err != nil {
 		return nil, err
 	}
 	return UpdateCommand(cmdPath, current, slug)
+}
+
+// UpdateCommand updates a given command binary to the latest version.
+// This function is a shortcut version of updater.UpdateCommand.
+func UpdateCommand(cmdPath string, current semver.Version, slug string) (*Release, error) {
+	return NewUpdater(Config{}).UpdateCommand(cmdPath, current, slug)
+}
+
+// UpdateSelf updates the running executable itself to the latest version.
+// This function is a shortcut version of updater.UpdateSelf.
+func UpdateSelf(current semver.Version, slug string) (*Release, error) {
+	return NewUpdater(Config{}).UpdateSelf(current, slug)
 }

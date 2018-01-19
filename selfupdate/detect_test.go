@@ -3,18 +3,9 @@ package selfupdate
 import (
 	"fmt"
 	"github.com/blang/semver"
-	"os"
 	"strings"
 	"testing"
 )
-
-func TestGitHubTokenEnv(t *testing.T) {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		t.Skip("because $GITHUB_TOKEN is not set")
-	}
-	_ = NewDetector()
-}
 
 func TestDetectReleaseWithVersionPrefix(t *testing.T) {
 	r, ok, err := DetectLatest("rhysd/github-clone-all")
@@ -119,7 +110,7 @@ func TestDetectNoRelease(t *testing.T) {
 }
 
 func TestInvalidSlug(t *testing.T) {
-	d := NewDetector()
+	up := NewUpdater(Config{})
 
 	for _, slug := range []string{
 		"foo",
@@ -128,7 +119,7 @@ func TestInvalidSlug(t *testing.T) {
 		"/bar",
 		"foo/bar/piyo",
 	} {
-		_, _, err := d.DetectLatest(slug)
+		_, _, err := up.DetectLatest(slug)
 		if err == nil {
 			t.Error(slug, "should be invalid slug")
 		}
@@ -139,8 +130,7 @@ func TestInvalidSlug(t *testing.T) {
 }
 
 func TestNonExistingRepo(t *testing.T) {
-	d := NewDetector()
-	v, ok, err := d.DetectLatest("rhysd/non-existing-repo")
+	v, ok, err := DetectLatest("rhysd/non-existing-repo")
 	if err != nil {
 		t.Fatal("Non-existing repo should not cause an error:", v)
 	}
@@ -150,8 +140,7 @@ func TestNonExistingRepo(t *testing.T) {
 }
 
 func TestNoReleaseFound(t *testing.T) {
-	d := NewDetector()
-	_, ok, err := d.DetectLatest("rhysd/misc")
+	_, ok, err := DetectLatest("rhysd/misc")
 	if err != nil {
 		t.Fatal("Repo having no release should not cause an error:", err)
 	}
