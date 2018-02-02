@@ -12,40 +12,47 @@ import (
 
 var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
 
-func findSuitableReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRelease, *github.ReleaseAsset, bool) {
-	// Generate candidates
-	cs := make([]string, 0, 8)
+func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string) (*github.ReleaseAsset, bool) {
+	if rel.GetDraft() {
+		log.Println("Skip draft version", rel.GetTagName())
+		return nil, false
+	}
+	if rel.GetPrerelease() {
+		log.Println("Skip pre-release version", rel.GetTagName())
+		return nil, false
+	}
+	if !reVersion.MatchString(rel.GetTagName()) {
+		log.Println("Skip version not adopting semver", rel.GetTagName())
+		return nil, false
+	}
+	for _, asset := range rel.Assets {
+		name := asset.GetName()
+		for _, s := range suffixes {
+			if strings.HasSuffix(name, s) {
+				return &asset, true
+			}
+		}
+	}
+	return nil, false
+}
+
+func findReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRelease, *github.ReleaseAsset, bool) {
+	// Generate valid suffix candidates to match
+	suffixes := make([]string, 0, 2*7*2)
 	for _, sep := range []rune{'_', '-'} {
 		for _, ext := range []string{".zip", ".tar.gz", ".gzip", ".gz", ".tar.xz", ".xz", ""} {
 			suffix := fmt.Sprintf("%s%c%s%s", runtime.GOOS, sep, runtime.GOARCH, ext)
-			cs = append(cs, suffix)
+			suffixes = append(suffixes, suffix)
 			if runtime.GOOS == "windows" {
 				suffix = fmt.Sprintf("%s%c%s.exe%s", runtime.GOOS, sep, runtime.GOARCH, ext)
-				cs = append(cs, suffix)
+				suffixes = append(suffixes, suffix)
 			}
 		}
 	}
 
 	for _, rel := range rels {
-		if rel.GetDraft() {
-			log.Println("Skip draft version", rel.GetTagName())
-			continue
-		}
-		if rel.GetPrerelease() {
-			log.Println("Skip pre-release version", rel.GetTagName())
-			continue
-		}
-		if !reVersion.MatchString(rel.GetTagName()) {
-			log.Println("Skip version not adopting semver", rel.GetTagName())
-			continue
-		}
-		for _, asset := range rel.Assets {
-			name := asset.GetName()
-			for _, c := range cs {
-				if strings.HasSuffix(name, c) {
-					return rel, &asset, true
-				}
-			}
+		if asset, ok := findAssetFromReleasse(rel, suffixes); ok {
+			return rel, asset, true
 		}
 	}
 
@@ -54,6 +61,11 @@ func findSuitableReleaseAndAsset(rels []*github.RepositoryRelease) (*github.Repo
 }
 
 // DetectLatest tries to get the latest version of the repository on GitHub. 'slug' means 'owner/name' formatted string.
+// It fetches releases information from GitHub API and find out the latest release with matching the tag names and asset names.
+// Drafts and pre-releases are ignored. Assets whould be suffixed by the OS name and the arch name such as 'foo_linux_amd64'
+// where 'foo' is a command name. '-' can also be used as a separator. File can be compressed with zip, gzip, zxip, tar&zip or tar&zxip.
+// So the asset can have a file extension for the corresponding compression format such as '.zip'.
+// On Windows, '.exe' also can be contained such as 'foo_windows_amd64.exe.zip'.
 func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err error) {
 	repo := strings.Split(slug, "/")
 	if len(repo) != 2 || repo[0] == "" || repo[1] == "" {
@@ -73,7 +85,7 @@ func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err 
 		return
 	}
 
-	rel, asset, found := findSuitableReleaseAndAsset(rels)
+	rel, asset, found := findReleaseAndAsset(rels)
 	if !found {
 		return
 	}
@@ -106,6 +118,7 @@ func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err 
 }
 
 // DetectLatest detects the latest release of the slug (owner/repo).
+// This function is a shortcut version of updater.DetectLatest() method.
 func DetectLatest(slug string) (*Release, bool, error) {
 	return DefaultUpdater().DetectLatest(slug)
 }
