@@ -1,8 +1,9 @@
 package selfupdate
 
 import (
-	"github.com/blang/semver"
 	"time"
+
+	"github.com/blang/semver"
 )
 
 // Release represents a release asset for current OS and arch.
@@ -14,7 +15,7 @@ type Release struct {
 	// AssetSize represents the size of asset in bytes
 	AssetByteSize int
 	// AssetID is the ID of the asset on GitHub
-	AssetID int
+	AssetID int64
 	// URL is a URL to release page for browsing
 	URL string
 	// ReleaseNotes is a release notes of the release
