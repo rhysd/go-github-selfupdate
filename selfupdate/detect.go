@@ -33,6 +33,7 @@ func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string) (*g
 			}
 		}
 	}
+	log.Println("No suitable asset was found in release", rel.GetTagName())
 	return nil, false
 }
 
@@ -56,7 +57,7 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRe
 		}
 	}
 
-	log.Println("Could no find any release for", runtime.GOOS, "and", runtime.GOARCH)
+	log.Println("Could not find any release for", runtime.GOOS, "and", runtime.GOARCH)
 	return nil, nil, false
 }
 
