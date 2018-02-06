@@ -19,6 +19,18 @@ func TestGitHubTokenEnv(t *testing.T) {
 	}
 }
 
+func TestGitHubTokenIsNotSet(t *testing.T) {
+	token := os.Getenv("GITHUB_TOKEN")
+	if token != "" {
+		defer os.Setenv("GITHUB_TOKEN", token)
+	}
+	os.Setenv("GITHUB_TOKEN", "")
+	_ = DefaultUpdater()
+	if _, err := NewUpdater(Config{}); err != nil {
+		t.Error("Failed to initialize updater with empty config")
+	}
+}
+
 func TestGitHubEnterpriseClient(t *testing.T) {
 	url := "https://github.company.com/api/v3/"
 	up, err := NewUpdater(Config{APIToken: "hogehoge", EnterpriseBaseURL: url})
