@@ -72,6 +72,9 @@ Following tools are using this library.
 - [dot-github](https://github.com/rhysd/dot-github)
 - [dotfiles](https://github.com/rhysd/dotfiles)
 - [github-clone-all](https://github.com/rhysd/github-clone-all)
+- [pythonbrew](https://github.com/utahta/pythonbrew)
+- [akashic](https://github.com/cowlick/akashic)
+- [butler](https://github.com/netzkern/butler)
 
 ## Usage
 
