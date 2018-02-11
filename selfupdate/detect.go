@@ -60,18 +60,31 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRe
 		}
 	}
 
-	// var ver sermver.Version
-	// var asset *github.ReleaseAsset
-	// var release *github.RepositoryRelease
+	var ver semver.Version
+	var asset *github.ReleaseAsset
+	var release *github.RepositoryRelease
 
+	// Find the latest version from the list of releases.
+	// Returned list from GitHub API is in the order of the date when created.
+	//   ref: https://github.com/rhysd/go-github-selfupdate/issues/11
 	for _, rel := range rels {
-		if asset, ver, ok := findAssetFromReleasse(rel, suffixes); ok {
-			return rel, asset, ver, true
+		if a, v, ok := findAssetFromReleasse(rel, suffixes); ok {
+			// Note: any version with suffix is less than any version without suffix.
+			// e.g. 0.0.1 > 0.0.1-beta
+			if release == nil || v.GTE(ver) {
+				ver = v
+				asset = a
+				release = rel
+			}
 		}
 	}
 
-	log.Println("Could not find any release for", runtime.GOOS, "and", runtime.GOARCH)
-	return nil, nil, semver.Version{}, false
+	if release == nil {
+		log.Println("Could not find any release for", runtime.GOOS, "and", runtime.GOARCH)
+		return nil, nil, semver.Version{}, false
+	}
+
+	return release, asset, ver, true
 }
 
 // DetectLatest tries to get the latest version of the repository on GitHub. 'slug' means 'owner/name' formatted string.
