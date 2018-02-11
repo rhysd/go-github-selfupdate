@@ -12,32 +12,41 @@ import (
 
 var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
 
-func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string) (*github.ReleaseAsset, bool) {
+func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string) (*github.ReleaseAsset, semver.Version, bool) {
 	if rel.GetDraft() {
 		log.Println("Skip draft version", rel.GetTagName())
-		return nil, false
+		return nil, semver.Version{}, false
 	}
 	if rel.GetPrerelease() {
 		log.Println("Skip pre-release version", rel.GetTagName())
-		return nil, false
+		return nil, semver.Version{}, false
 	}
-	if !reVersion.MatchString(rel.GetTagName()) {
+
+	verText := rel.GetTagName()
+	indices := reVersion.FindStringIndex(verText)
+	if indices == nil {
 		log.Println("Skip version not adopting semver", rel.GetTagName())
-		return nil, false
+		return nil, semver.Version{}, false
 	}
+	if indices[0] > 0 {
+		log.Println("Strip prefix of version", verText[:indices[0]], "from", verText)
+		verText = verText[indices[0]:]
+	}
+
 	for _, asset := range rel.Assets {
 		name := asset.GetName()
 		for _, s := range suffixes {
 			if strings.HasSuffix(name, s) {
-				return &asset, true
+				return &asset, semver.MustParse(verText), true
 			}
 		}
 	}
+
 	log.Println("No suitable asset was found in release", rel.GetTagName())
-	return nil, false
+	return nil, semver.Version{}, false
 }
 
-func findReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRelease, *github.ReleaseAsset, bool) {
+func findReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRelease, *github.ReleaseAsset, semver.Version, bool) {
 	// Generate valid suffix candidates to match
 	suffixes := make([]string, 0, 2*7*2)
 	for _, sep := range []rune{'_', '-'} {
@@ -51,14 +60,18 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRe
 		}
 	}
 
+	// var ver sermver.Version
+	// var asset *github.ReleaseAsset
+	// var release *github.RepositoryRelease
+
 	for _, rel := range rels {
-		if asset, ok := findAssetFromReleasse(rel, suffixes); ok {
-			return rel, asset, true
+		if asset, ver, ok := findAssetFromReleasse(rel, suffixes); ok {
+			return rel, asset, ver, true
 		}
 	}
 
 	log.Println("Could not find any release for", runtime.GOOS, "and", runtime.GOARCH)
-	return nil, nil, false
+	return nil, nil, semver.Version{}, false
 }
 
 // DetectLatest tries to get the latest version of the repository on GitHub. 'slug' means 'owner/name' formatted string.
@@ -86,20 +99,13 @@ func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err 
 		return
 	}
 
-	rel, asset, found := findReleaseAndAsset(rels)
+	rel, asset, ver, found := findReleaseAndAsset(rels)
 	if !found {
 		return
 	}
 
-	tag := rel.GetTagName()
 	url := asset.GetBrowserDownloadURL()
-	log.Println("Successfully fetched the latest release. tag:", tag, ", name:", rel.GetName(), ", URL:", rel.GetURL(), ", Asset:", url)
-
-	// Strip version prefix
-	if indices := reVersion.FindStringIndex(tag); indices != nil && indices[0] > 0 {
-		log.Println("Strip prefix of version:", tag[:indices[0]])
-		tag = tag[indices[0]:]
-	}
+	log.Println("Successfully fetched the latest release. tag:", rel.GetTagName(), ", name:", rel.GetName(), ", URL:", rel.GetURL(), ", Asset:", url)
 
 	publishedAt := rel.GetPublishedAt().Time
 	release = &Release{
@@ -112,9 +118,8 @@ func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err 
 		PublishedAt:   &publishedAt,
 		RepoOwner:     repo[0],
 		RepoName:      repo[1],
+		Version:       ver,
 	}
-
-	release.Version, err = semver.Make(tag)
 	return
 }
 
