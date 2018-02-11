@@ -33,11 +33,19 @@ func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string) (*g
 		verText = verText[indices[0]:]
 	}
 
+	// If semver cannot parse the version text, it means that the text is not adopting
+	// the semantic versioning. So it should be skipped.
+	ver, err := semver.Make(verText)
+	if err != nil {
+		log.Println("Failed to parse a semantic version", verText)
+		return nil, semver.Version{}, false
+	}
+
 	for _, asset := range rel.Assets {
 		name := asset.GetName()
 		for _, s := range suffixes {
 			if strings.HasSuffix(name, s) {
-				return &asset, semver.MustParse(verText), true
+				return &asset, ver, true
 			}
 		}
 	}
