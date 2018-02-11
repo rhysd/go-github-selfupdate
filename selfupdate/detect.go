@@ -25,7 +25,7 @@ func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string) (*g
 	verText := rel.GetTagName()
 	indices := reVersion.FindStringIndex(verText)
 	if indices == nil {
-		log.Println("Skip version not adopting semver", rel.GetTagName())
+		log.Println("Skip version not adopting semver", verText)
 		return nil, semver.Version{}, false
 	}
 	if indices[0] > 0 {
@@ -93,11 +93,10 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease) (*github.RepositoryRe
 // where 'foo' is a command name. '-' can also be used as a separator. File can be compressed with zip, gzip, zxip, tar&zip or tar&zxip.
 // So the asset can have a file extension for the corresponding compression format such as '.zip'.
 // On Windows, '.exe' also can be contained such as 'foo_windows_amd64.exe.zip'.
-func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err error) {
+func (up *Updater) DetectLatest(slug string) (*Release, bool, error) {
 	repo := strings.Split(slug, "/")
 	if len(repo) != 2 || repo[0] == "" || repo[1] == "" {
-		err = fmt.Errorf("Invalid slug format. It should be 'owner/name': %s", slug)
-		return
+		return nil, false, fmt.Errorf("Invalid slug format. It should be 'owner/name': %s", slug)
 	}
 
 	rels, res, err := up.api.Repositories.ListReleases(up.apiCtx, repo[0], repo[1], nil)
@@ -105,35 +104,34 @@ func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err 
 		log.Println("API returned an error response:", err)
 		if res != nil && res.StatusCode == 404 {
 			// 404 means repository not found or release not found. It's not an error here.
-			found = false
 			err = nil
 			log.Println("API returned 404. Repository or release not found")
 		}
-		return
+		return nil, false, err
 	}
 
 	rel, asset, ver, found := findReleaseAndAsset(rels)
 	if !found {
-		return
+		return nil, false, nil
 	}
 
 	url := asset.GetBrowserDownloadURL()
 	log.Println("Successfully fetched the latest release. tag:", rel.GetTagName(), ", name:", rel.GetName(), ", URL:", rel.GetURL(), ", Asset:", url)
 
 	publishedAt := rel.GetPublishedAt().Time
-	release = &Release{
-		AssetURL:      url,
-		AssetByteSize: asset.GetSize(),
-		AssetID:       asset.GetID(),
-		URL:           rel.GetHTMLURL(),
-		ReleaseNotes:  rel.GetBody(),
-		Name:          rel.GetName(),
-		PublishedAt:   &publishedAt,
-		RepoOwner:     repo[0],
-		RepoName:      repo[1],
-		Version:       ver,
+	release := &Release{
+		ver,
+		url,
+		asset.GetSize(),
+		asset.GetID(),
+		rel.GetHTMLURL(),
+		rel.GetBody(),
+		rel.GetName(),
+		&publishedAt,
+		repo[0],
+		repo[1],
 	}
-	return
+	return release, true, nil
 }
 
 // DetectLatest detects the latest release of the slug (owner/repo).
