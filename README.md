@@ -89,6 +89,7 @@ It provides `selfupdate` package.
 - `selfupdate.UpdateSelf()`: Detect the latest version of itself and run self update.
 - `selfupdate.UpdateCommand()`: Detect the latest version of given repository and update given command.
 - `selfupdate.DetectLatest()`: Detect the latest version of given repository.
+- `selfupdate.DetectVersion()`: Detect the user defined version of given repository.
 - `selfupdate.UpdateTo()`: Update given command to the binary hosted on given URL.
 - `selfupdate.Updater`: Context manager of self-upadte process. If you want to customize some behavior
   of self-update (e.g. specify API token, use GitHub Enterprise, ...), please make an instance of
@@ -231,7 +232,7 @@ You need to put the binaries with the following format.
 `{.ext}` is a file extension. go-github-selfupdate supports `.zip`, `.gzip`, `.tar.gz` and `.tar.xz`.
 You can also use blank and it means binary is not compressed.
 
-If you compress binary, uncompressed directory or file must contain the executable named `{cmd}`. 
+If you compress binary, uncompressed directory or file must contain the executable named `{cmd}`.
 
 And you can also use `-` for separator instead of `_` if you like.
 
