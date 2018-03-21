@@ -102,7 +102,7 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease, targetVersion string)
 
 // DetectLatest tries to get the latest version of the repository on GitHub. 'slug' means 'owner/name' formatted string.
 // It fetches releases information from GitHub API and find out the latest release with matching the tag names and asset names.
-// Drafts and pre-releases are ignored. Assets whould be suffixed by the OS name and the arch name such as 'foo_linux_amd64'
+// Drafts and pre-releases are ignored. Assets would be suffixed by the OS name and the arch name such as 'foo_linux_amd64'
 // where 'foo' is a command name. '-' can also be used as a separator. File can be compressed with zip, gzip, zxip, tar&zip or tar&zxip.
 // So the asset can have a file extension for the corresponding compression format such as '.zip'.
 // On Windows, '.exe' also can be contained such as 'foo_windows_amd64.exe.zip'.
@@ -110,7 +110,7 @@ func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err 
 	return up.DetectVersion(slug, "")
 }
 
-// DetectVersion tries to get the give nversion of the repository on Github. `slug` means `owner/name` formatted string.
+// DetectVersion tries to get the given version of the repository on Github. `slug` means `owner/name` formatted string.
 // And version indicates the required version.
 func (up *Updater) DetectVersion(slug string, version string) (release *Release, found bool, err error) {
 	repo := strings.Split(slug, "/")
