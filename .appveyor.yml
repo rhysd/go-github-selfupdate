@@ -9,6 +9,7 @@ install:
     - go version
     - go env
     - go get -v -t -d ./...
+    - cd %GOPATH%\src\github.com\google\go-github && git reset --hard 08e68b5 && cd %GOPATH%\src\github.com\rhysd\go-github-selfupdate
 build: off
 test_script:
     - go build ./selfupdate
