@@ -6,7 +6,7 @@ Self-Update Mechanism for Go Commands using GitHub
 [![AppVeyor Status][]][AppVeyor]
 [![Codecov Status][]][Codecov]
 
-**NOTICE: Currently downloading an assert with go-github is broken due to [go-github/issue#870](https://github.com/google/go-github/issues/870)**
+**NOTICE: Currently downloading an asset with go-github is broken due to [go-github/issue#870](https://github.com/google/go-github/issues/870)**
 
 Please run following commands before building your tool for avoiding the issue:
 
