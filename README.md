@@ -6,6 +6,17 @@ Self-Update Mechanism for Go Commands using GitHub
 [![AppVeyor Status][]][AppVeyor]
 [![Codecov Status][]][Codecov]
 
+**NOTICE: Currently downloading an assert with go-github is broken due to [go-github/issue#870](https://github.com/google/go-github/issues/870)**
+
+Please run following commands before building your tool for avoiding the issue:
+
+```
+$ cd $GOPATH/src/github.com/google/go-github
+$ git reset --hard 08e68b5
+```
+
+----------------------------------------------------------------------------------------------------
+
 [go-github-selfupdate][] is a Go library to provide self-update mechanism to command line tools.
 
 Go does not provide the way to install/update the stable version of tools. By default, Go command line
