@@ -35,6 +35,8 @@ And small wrapper CLIs are provided:
 - [detect-latest-release](./cmd/detect-latest-release): Detect the latest release of given GitHub repository from command line
 - [go-get-release](./cmd/go-get-release): Like `go get`, but install a release binary from GitHub instead
 
+[Slide at GoCon 2018 Spring (Japanese)](https://speakerdeck.com/rhysd/go-selfupdate-github-de-turuwozi-ji-atupudetosuru)
+
 [go-github-selfupdate]: https://github.com/rhysd/go-github-selfupdate
 [GitHub Releases API]: https://developer.github.com/v3/repos/releases/
 
