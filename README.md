@@ -91,7 +91,7 @@ It provides `selfupdate` package.
 - `selfupdate.DetectLatest()`: Detect the latest version of given repository.
 - `selfupdate.DetectVersion()`: Detect the user defined version of given repository.
 - `selfupdate.UpdateTo()`: Update given command to the binary hosted on given URL.
-- `selfupdate.Updater`: Context manager of self-upadte process. If you want to customize some behavior
+- `selfupdate.Updater`: Context manager of self-update process. If you want to customize some behavior
   of self-update (e.g. specify API token, use GitHub Enterprise, ...), please make an instance of
   `Updater` and use its methods.
 
