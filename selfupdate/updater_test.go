@@ -61,16 +61,6 @@ func TestGitHubEnterpriseClient(t *testing.T) {
 	}
 }
 
-func TestGitHubEnterpriseClientWithoutToken(t *testing.T) {
-	token := os.Getenv("GITHUB_TOKEN")
-	defer os.Setenv("GITHUB_TOKEN", token)
-	os.Setenv("GITHUB_TOKEN", "")
-	_, err := NewUpdater(Config{EnterpriseBaseURL: "https://github.company.com/api/v3/"})
-	if err == nil {
-		t.Fatal("Error should be reported because of empty token")
-	}
-}
-
 func TestGitHubEnterpriseClientInvalidURL(t *testing.T) {
 	_, err := NewUpdater(Config{APIToken: "hogehoge", EnterpriseBaseURL: ":this is not a URL"})
 	if err == nil {
