@@ -11,6 +11,11 @@ script:
   - go build ./cmd/selfupdate-example/
   - go build ./cmd/detect-latest-release/
   - go build ./cmd/go-get-release/
-  - go test -v -race -coverprofile=coverage.txt ./selfupdate
+  - |
+    if [[ "${GITHUB_TOKEN}" != "" ]]; then
+      go test -v -race -coverprofile=coverage.txt ./selfupdate
+    else
+      go test -v -race -short ./selfupdate
+    fi
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - if [ -f coverage.txt ]; then bash <(curl -s https://codecov.io/bash); fi
