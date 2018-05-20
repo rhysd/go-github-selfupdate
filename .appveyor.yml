@@ -15,7 +15,12 @@ test_script:
     - go build ./cmd/selfupdate-example
     - go build ./cmd/detect-latest-release
     - go build ./cmd/go-get-release/
-    - go test -v -race -coverprofile=coverage.txt ./selfupdate
+    - ps: |
+        if (Test-Path env:GITHUB_TOKEN) {
+            go test -v -race "-coverprofile=coverage.txt" ./selfupdate
+        } else {
+            go test -v -race -short ./selfupdate
+        }
 after_test:
     - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
     - pip install codecov
