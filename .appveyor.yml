@@ -17,15 +17,12 @@ test_script:
     - go build ./cmd/go-get-release/
     - ps: |
         if (Test-Path env:GITHUB_TOKEN) {
-            go test -v -race -coverprofile=coverage.txt ./selfupdate
+            go test -v -race "-coverprofile=coverage.txt" ./selfupdate
         } else {
             go test -v -race -short ./selfupdate
         }
 after_test:
-    - ps: |
-        if (Test-Path coverage.txt) {
-            "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
-            pip install codecov
-            codecov -f "coverage.txt"
-        }
+    - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
+    - pip install codecov
+    - codecov -f "coverage.txt"
 deploy: off
