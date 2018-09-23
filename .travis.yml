@@ -2,10 +2,12 @@ language: go
 os:
   - linux
   - osx
+env:
+  - GO111MODULE=on
 install:
-  - go get -t -d -v ./...
   - go version
   - go env
+  - go get -t -d -v ./...
 script:
   - go build ./selfupdate/
   - go build ./cmd/selfupdate-example/

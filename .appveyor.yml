@@ -1,8 +1,9 @@
 version: "{build}"
 clone_depth: 1
-clone_folder: c:\gopath\src\github.com\rhysd\go-github-selfupdate
+clone_folder: c:\outside-gopath
 environment:
     GOPATH: c:\gopath
+    GO111MODULE: on
 install:
     - echo %PATH%
     - echo %GOPATH%
