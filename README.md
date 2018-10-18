@@ -47,7 +47,7 @@ Example to understand what this library does is prepared as [CLI](./cmd/selfupda
 Install it at first.
 
 ```
-$ go get -u github.com/rhysd/go-github-selfupdate/tree/master/cmd/selfupdate-example
+$ go get -u github.com/rhysd/go-github-selfupdate/cmd/selfupdate-example
 ```
 
 And check the version by `-version`. `-help` flag is also available to know all flags.
