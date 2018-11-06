@@ -144,7 +144,7 @@ func confirmAndSelfUpdate() {
     }
 
     v := semver.MustParse(version)
-    if !found || latest.Version.Equals(v) {
+    if !found || latest.Version.LTE(v) {
         log.Println("Current version is the latest")
         return
     }
@@ -159,7 +159,12 @@ func confirmAndSelfUpdate() {
         return
     }
 
-    if err := selfupdate.UpdateTo(latest.AssetURL, os.Args[0]); err != nil {
+    exe, err := os.Executable()
+    if err != nil {
+        log.Println("Could not locate executable path")
+        return
+    }
+    if err := selfupdate.UpdateTo(latest.AssetURL, exe); err != nil {
         log.Println("Error occurred while updating binary:", err)
         return
     }
@@ -170,6 +175,9 @@ func confirmAndSelfUpdate() {
 If GitHub API token is set to `[token]` section in `gitconfig` or `$GITHUB_TOKEN` environment variable,
 this library will use it to call GitHub REST API. It's useful when reaching rate limits or when using
 this library with private repositories.
+
+Note that `os.Args[0]` is not available since it does not provide a full path to executable. Instead,
+please use `os.Executable()`.
 
 Please see [the documentation page][GoDoc] for more detail.
 
