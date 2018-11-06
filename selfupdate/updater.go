@@ -15,6 +15,7 @@ import (
 type Updater struct {
 	api    *github.Client
 	apiCtx context.Context
+	validator Validator
 }
 
 // Config represents the configuration of self-update.
@@ -27,6 +28,8 @@ type Config struct {
 	// EnterpriseUploadURL is a URL to upload stuffs to GitHub Enterprise instance. This is often the same as an API base URL.
 	// So if this field is not set and EnterpriseBaseURL is set, EnterpriseBaseURL is also set to this field.
 	EnterpriseUploadURL string
+	// Validator represents types which enable additional validation of downloaded release.
+	Validator Validator
 }
 
 func newHTTPClient(ctx context.Context, token string) *http.Client {
@@ -52,7 +55,7 @@ func NewUpdater(config Config) (*Updater, error) {
 
 	if config.EnterpriseBaseURL == "" {
 		client := github.NewClient(hc)
-		return &Updater{client, ctx}, nil
+		return &Updater{client, ctx, config.Validator}, nil
 	}
 
 	u := config.EnterpriseUploadURL
@@ -63,7 +66,7 @@ func NewUpdater(config Config) (*Updater, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Updater{client, ctx}, nil
+	return &Updater{api: client, apiCtx: ctx, validator: config.Validator}, nil
 }
 
 // DefaultUpdater creates a new updater instance with default configuration.
@@ -76,5 +79,5 @@ func DefaultUpdater() *Updater {
 	}
 	ctx := context.Background()
 	client := newHTTPClient(ctx, token)
-	return &Updater{github.NewClient(client), ctx}
+	return &Updater{api: github.NewClient(client), apiCtx: ctx}
 }

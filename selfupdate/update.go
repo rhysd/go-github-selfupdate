@@ -1,8 +1,10 @@
 package selfupdate
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,9 +15,7 @@ import (
 	"github.com/inconshreveable/go-update"
 )
 
-func uncompressAndUpdate(src io.ReadCloser, assetURL, cmdPath string) error {
-	defer src.Close()
-
+func uncompressAndUpdate(src io.Reader, assetURL, cmdPath string) error {
 	_, cmd := filepath.Split(cmdPath)
 	asset, err := UncompressCommand(src, assetURL, cmd)
 	if err != nil {
@@ -67,7 +67,41 @@ func (up *Updater) UpdateTo(rel *Release, cmdPath string) error {
 			return err
 		}
 	}
-	return uncompressAndUpdate(src, rel.AssetURL, cmdPath)
+	defer src.Close()
+
+	data, err := ioutil.ReadAll(src)
+	if err != nil {
+		return fmt.Errorf("Failed reading asset body: %v", err)
+	}
+
+	if up.validator == nil {
+		return uncompressAndUpdate(bytes.NewReader(data), rel.AssetURL, cmdPath)
+	}
+
+	validationSrc, validationRedirectURL, err := up.api.Repositories.DownloadReleaseAsset(up.apiCtx, rel.RepoOwner, rel.RepoName, rel.ValidationAssetID)
+	if err != nil {
+		return fmt.Errorf("Failed to call GitHub Releases API for getting an validation asset(ID: %d) for repository '%s/%s': %s", rel.ValidationAssetID, rel.RepoOwner, rel.RepoName, err)
+	}
+	if validationRedirectURL != "" {
+		log.Println("Redirect URL was returned while trying to download a release validation asset from GitHub API. Falling back to downloading from asset URL directly:", redirectURL)
+		validationSrc, err = up.downloadDirectlyFromURL(validationRedirectURL)
+		if err != nil {
+			return err
+		}
+	}
+
+	defer validationSrc.Close()
+
+	validationData, err := ioutil.ReadAll(validationSrc)
+	if err != nil {
+		return fmt.Errorf("Failed reading validation asset body: %v", err)
+	}
+
+	if err := up.validator.Validate(data, validationData); err != nil {
+		return fmt.Errorf("Failed validating asset content: %v", err)
+	}
+
+	return uncompressAndUpdate(bytes.NewReader(data), rel.AssetURL, cmdPath)
 }
 
 // UpdateCommand updates a given command binary to the latest version.
@@ -129,6 +163,7 @@ func UpdateTo(assetURL, cmdPath string) error {
 	if err != nil {
 		return err
 	}
+	defer src.Close()
 	return uncompressAndUpdate(src, assetURL, cmdPath)
 }
 
