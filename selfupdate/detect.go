@@ -59,6 +59,15 @@ func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string, tar
 	return nil, semver.Version{}, false
 }
 
+func findValidationAsset(rel *github.RepositoryRelease, validationName string) (*github.ReleaseAsset, bool) {
+	for _, asset := range rel.Assets {
+		if asset.GetName() == validationName {
+			return &asset, true
+		}
+	}
+	return nil, false
+}
+
 func findReleaseAndAsset(rels []*github.RepositoryRelease, targetVersion string) (*github.RepositoryRelease, *github.ReleaseAsset, semver.Version, bool) {
 	// Generate candidates
 	suffixes := make([]string, 0, 2*7*2)
@@ -143,6 +152,7 @@ func (up *Updater) DetectVersion(slug string, version string) (release *Release,
 		url,
 		asset.GetSize(),
 		asset.GetID(),
+		-1,
 		rel.GetHTMLURL(),
 		rel.GetBody(),
 		rel.GetName(),
@@ -150,6 +160,16 @@ func (up *Updater) DetectVersion(slug string, version string) (release *Release,
 		repo[0],
 		repo[1],
 	}
+
+	if up.validator != nil {
+		validationName := asset.GetName()+up.validator.Suffix()
+		validationAsset, ok := findValidationAsset(rel, validationName)
+		if !ok {
+			return nil, false, fmt.Errorf("Failed finding validation file %q", validationName)
+		}
+		release.ValidationAssetID = validationAsset.GetID()
+	}
+
 	return release, true, nil
 }
 

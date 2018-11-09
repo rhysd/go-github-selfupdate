@@ -29,6 +29,7 @@ GitHub and replaces itself.
 - Many archive and compression formats are supported (zip, tar, gzip, xzip)
 - Support private repositories
 - Support [GitHub Enterprise][]
+- Support hash, signature validation
 
 And small wrapper CLIs are provided:
 
@@ -297,6 +298,44 @@ In summary, structure of releases on GitHub looks like:
 
 Tags which don't contain a version number are ignored (i.e. `nightly`). And releases marked
 as `pre-release` are also ignored.
+
+### Hash or Signature Validation
+
+go-github-selfupdate supports hash or signature validatiom of the downloaded files. It comes
+with support for sha256 hashes or ECDSA signatures. In addition to internal functions the
+user can implement the `Validator` interface for own validation mechanisms.
+
+```go
+// Validator represents an interface which enables additional validation of releases.
+type Validator interface {
+	// Validate validates release bytes against an additional asset bytes.
+	// See SHA2Validator or ECDSAValidator for more information.
+	Validate(release, asset []byte) error
+	// Suffix describes the additional file ending which is used for finding the
+	// additional asset.
+	Suffix() string
+}
+```
+
+## SHA256
+
+To verify the integrity by SHA256 generate a hash sum and save it within a file which has the
+same naming as original file with the suffix `.sha256`.
+For e.g. use sha256sum, the file `selfupdate/testdata/foo.zip.sha256` is generated with:
+```shell
+sha256sum foo.zip > foo.zip.sha256
+```
+
+## ECDSA
+To verify the signature by ECDSA generate a signature and save it within a file which has the
+same naming as original file with the suffix `.sig`.
+For e.g. use openssl, the file `selfupdate/testdata/foo.zip.sig` is generated with:
+```shell
+openssl dgst -sha256 -sign Test.pem -out foo.zip.sig foo.zip
+```
+
+go-github-selfupdate makes use of go internal crypto package. Therefore the used private key
+has to be compatbile with FIPS 186-3.
 
 ### Development
 
