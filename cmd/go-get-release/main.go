@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+var version = "1.0.0"
+
 func usage() {
 	fmt.Fprintln(os.Stderr, `Usage: go-get-release [flags] {package}
 
@@ -76,9 +78,15 @@ func installFrom(url, cmd, path string) error {
 
 func main() {
 	help := flag.Bool("help", false, "Show help")
+	ver := flag.Bool("version", false, "Show version")
 
 	flag.Usage = usage
 	flag.Parse()
+
+	if *ver {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 
 	if *help || flag.NArg() != 1 || !strings.HasPrefix(flag.Arg(0), "github.com/") {
 		usage()
