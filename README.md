@@ -29,7 +29,7 @@ GitHub and replaces itself.
 - Many archive and compression formats are supported (zip, tar, gzip, xzip)
 - Support private repositories
 - Support [GitHub Enterprise][]
-- Support hash, signature validation
+- Support hash, signature validation (thanks to [@tobiaskohlbau](https://github.com/tobiaskohlbau))
 
 And small wrapper CLIs are provided:
 
@@ -40,6 +40,8 @@ And small wrapper CLIs are provided:
 
 [go-github-selfupdate]: https://github.com/rhysd/go-github-selfupdate
 [GitHub Releases API]: https://developer.github.com/v3/repos/releases/
+
+
 
 ## Try Out Example
 
@@ -80,6 +82,8 @@ Following tools are using this library.
 - [pythonbrew](https://github.com/utahta/pythonbrew)
 - [akashic](https://github.com/cowlick/akashic)
 - [butler](https://github.com/netzkern/butler)
+
+
 
 ## Usage
 
@@ -225,6 +229,7 @@ API does not work without authentication.
 If your GitHub Enterprise instance's upload URL is different from the base URL, please also set `EnterpriseUploadURL`
 field
 
+
 ### Naming Rules of Released Binaries
 
 go-github-selfupdate assumes that released binaries are put for each combination of platforms and archs.
@@ -299,6 +304,7 @@ In summary, structure of releases on GitHub looks like:
 Tags which don't contain a version number are ignored (i.e. `nightly`). And releases marked
 as `pre-release` are also ignored.
 
+
 ### Hash or Signature Validation
 
 go-github-selfupdate supports hash or signature validatiom of the downloaded files. It comes
@@ -317,7 +323,7 @@ type Validator interface {
 }
 ```
 
-## SHA256
+#### SHA256
 
 To verify the integrity by SHA256 generate a hash sum and save it within a file which has the
 same naming as original file with the suffix `.sha256`.
@@ -326,7 +332,7 @@ For e.g. use sha256sum, the file `selfupdate/testdata/foo.zip.sha256` is generat
 sha256sum foo.zip > foo.zip.sha256
 ```
 
-## ECDSA
+#### ECDSA
 To verify the signature by ECDSA generate a signature and save it within a file which has the
 same naming as original file with the suffix `.sig`.
 For e.g. use openssl, the file `selfupdate/testdata/foo.zip.sig` is generated with:
@@ -337,9 +343,11 @@ openssl dgst -sha256 -sign Test.pem -out foo.zip.sig foo.zip
 go-github-selfupdate makes use of go internal crypto package. Therefore the used private key
 has to be compatbile with FIPS 186-3.
 
-### Development
 
-#### Running tests
+
+## Development
+
+### Running tests
 
 All library sources are put in `/selfupdate` directory. So you can run tests as following
 at the top of the repository:
@@ -360,7 +368,8 @@ Above command run almost all tests and it's enough to check the behavior before 
 Some tests are still not tested because they depend on my personal API access token, though; for repositories
 on GitHub Enterprise or private repositories on GitHub.
 
-#### Debugging
+
+### Debugging
 
 This library can output logs for debugging. By default, logger is disabled.
 You can enable the logger by following and can know the details of the self update.
@@ -369,11 +378,14 @@ You can enable the logger by following and can know the details of the self upda
 selfupdate.EnableLog()
 ```
 
-#### CI
+
+### CI
 
 Tests run on CIs (Travis CI, Appveyor) are run with the token I generated. However, because of security
 reason, it is not used for the tests for pull requests. In the tests, a GitHub API token is not set and
 API rate limit is often exceeding. So please ignore the test failures on creating a pull request.
+
+
 
 ## Dependencies
 
@@ -396,6 +408,8 @@ This library utilizes
 [semver]: https://github.com/blang/semver
 [xz]: https://github.com/ulikunitz/xz
 
+
+
 ## What is different from [tj/go-update][]?
 
 This library goal is the same as tj/go-update, but it's different in following points.
@@ -409,6 +423,8 @@ tj/go-update:
 - supports Apex store for putting releases
 
 [tj/go-update]: https://github.com/tj/go-update
+
+
 
 ## License
 

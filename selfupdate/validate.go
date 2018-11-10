@@ -46,7 +46,7 @@ type ECDSAValidator struct {
 }
 
 // Validate validates the ECDSA signature the release against the signature
-// contained in an addtional asset file.
+// contained in an additional asset file.
 // additional asset file.
 func (v *ECDSAValidator) Validate(input, signature []byte) error {
 	h := sha256.New()
