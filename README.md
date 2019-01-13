@@ -12,7 +12,7 @@ Go does not provide the way to install/update the stable version of tools. By de
 tools are updated:
 
 1. using `go get -u`, but it is not stable because HEAD of the repository is built
-2. using system's package manager, but it is harder to release because of dpeneding on the platform
+2. using system's package manager, but it is harder to release because of depending on the platform
 3. downloading executables from GitHub release page, but it requires users to download and put it manually
 
 [go-github-selfupdate][] resolves the problem of 3. by detecting the latest release, downloading it and
