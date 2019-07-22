@@ -81,7 +81,8 @@ func UncompressCommand(src io.Reader, url, cmd string) (io.Reader, error) {
 		}
 
 		name := r.Header.Name
-		if name != cmd {
+		// Allow GOX name pattern of cmd_os_arch
+		if !strings.HasPrefix(name, cmd) {
 			return nil, fmt.Errorf("File name '%s' does not match to command '%s' found in %s", name, cmd, url)
 		}
 
