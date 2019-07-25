@@ -254,10 +254,16 @@ For example, if your command name is `foo-bar`, one of followings is expected to
 page on GitHub as binary for platform `linux` and arch `amd64`.
 
 - `foo-bar_linux_amd64` (executable)
-- `foo-bar_linux_amd64.zip` (zip file containing `foo-bar`)
-- `foo-bar_linux_amd64.tar.gz` (tar file containing `foo-bar`)
-- `foo-bar_linux_amd64.xz` (xzip file of the executable `foo-bar`)
+- `foo-bar_linux_amd64.zip` (zip file)
+- `foo-bar_linux_amd64.tar.gz` (tar file)
+- `foo-bar_linux_amd64.xz` (xzip file)
 - `foo-bar-linux-amd64.tar.gz` (`-` is also ok for separator)
+
+If you compress and/or archive your release asset, it must contain an executable named one of followings:
+
+- `foo-bar` (only command name)
+- `foo-bar_linux_amd64` (full name)
+- `foo-bar-linux-amd64` (`-` is also ok for separator)
 
 To archive the executable directly on Windows, `.exe` can be added before file extension like
 `foo-bar_windows_amd64.exe.zip`.
