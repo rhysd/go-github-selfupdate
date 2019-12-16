@@ -12,7 +12,13 @@ import (
 
 var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
 
-func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string, targetVersion string) (*github.ReleaseAsset, semver.Version, bool) {
+func findAssetFromRelease(rel *github.RepositoryRelease,
+	suffixes []string, targetVersion string, opts ...Option) (*github.ReleaseAsset, semver.Version, bool) {
+	settings := defaultSettings()
+	for _, apply := range opts {
+		apply(settings)
+	}
+
 	if targetVersion != "" && targetVersion != rel.GetTagName() {
 		log.Println("Skip", rel.GetTagName(), "not matching to specified version", targetVersion)
 		return nil, semver.Version{}, false
@@ -49,7 +55,16 @@ func findAssetFromReleasse(rel *github.RepositoryRelease, suffixes []string, tar
 	for _, asset := range rel.Assets {
 		name := asset.GetName()
 		for _, s := range suffixes {
-			if strings.HasSuffix(name, s) {
+			if strings.HasSuffix(name, s) { // require version, arch etc
+				if len(settings.filters) > 0 {
+					for _, filter := range settings.filters { // extra condition to select among several release artifacts
+						if filter.MatchString(name) {
+							return &asset, ver, true
+						}
+					}
+					break
+				}
+				// default: assume single artifact
 				return &asset, ver, true
 			}
 		}
@@ -68,7 +83,8 @@ func findValidationAsset(rel *github.RepositoryRelease, validationName string) (
 	return nil, false
 }
 
-func findReleaseAndAsset(rels []*github.RepositoryRelease, targetVersion string) (*github.RepositoryRelease, *github.ReleaseAsset, semver.Version, bool) {
+func findReleaseAndAsset(rels []*github.RepositoryRelease,
+	targetVersion string, opts ...Option) (*github.RepositoryRelease, *github.ReleaseAsset, semver.Version, bool) {
 	// Generate candidates
 	suffixes := make([]string, 0, 2*7*2)
 	for _, sep := range []rune{'_', '-'} {
@@ -90,7 +106,7 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease, targetVersion string)
 	// Returned list from GitHub API is in the order of the date when created.
 	//   ref: https://github.com/rhysd/go-github-selfupdate/issues/11
 	for _, rel := range rels {
-		if a, v, ok := findAssetFromReleasse(rel, suffixes, targetVersion); ok {
+		if a, v, ok := findAssetFromRelease(rel, suffixes, targetVersion, opts...); ok {
 			// Note: any version with suffix is less than any version without suffix.
 			// e.g. 0.0.1 > 0.0.1-beta
 			if release == nil || v.GTE(ver) {
@@ -115,13 +131,13 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease, targetVersion string)
 // where 'foo' is a command name. '-' can also be used as a separator. File can be compressed with zip, gzip, zxip, tar&zip or tar&zxip.
 // So the asset can have a file extension for the corresponding compression format such as '.zip'.
 // On Windows, '.exe' also can be contained such as 'foo_windows_amd64.exe.zip'.
-func (up *Updater) DetectLatest(slug string) (release *Release, found bool, err error) {
-	return up.DetectVersion(slug, "")
+func (up *Updater) DetectLatest(slug string, opts ...Option) (release *Release, found bool, err error) {
+	return up.DetectVersion(slug, "", opts...)
 }
 
 // DetectVersion tries to get the given version of the repository on Github. `slug` means `owner/name` formatted string.
 // And version indicates the required version.
-func (up *Updater) DetectVersion(slug string, version string) (release *Release, found bool, err error) {
+func (up *Updater) DetectVersion(slug string, version string, opts ...Option) (release *Release, found bool, err error) {
 	repo := strings.Split(slug, "/")
 	if len(repo) != 2 || repo[0] == "" || repo[1] == "" {
 		return nil, false, fmt.Errorf("Invalid slug format. It should be 'owner/name': %s", slug)
@@ -138,7 +154,7 @@ func (up *Updater) DetectVersion(slug string, version string) (release *Release,
 		return nil, false, err
 	}
 
-	rel, asset, ver, found := findReleaseAndAsset(rels, version)
+	rel, asset, ver, found := findReleaseAndAsset(rels, version, opts...)
 	if !found {
 		return nil, false, nil
 	}
@@ -162,7 +178,7 @@ func (up *Updater) DetectVersion(slug string, version string) (release *Release,
 	}
 
 	if up.validator != nil {
-		validationName := asset.GetName()+up.validator.Suffix()
+		validationName := asset.GetName() + up.validator.Suffix()
 		validationAsset, ok := findValidationAsset(rel, validationName)
 		if !ok {
 			return nil, false, fmt.Errorf("Failed finding validation file %q", validationName)
@@ -175,11 +191,11 @@ func (up *Updater) DetectVersion(slug string, version string) (release *Release,
 
 // DetectLatest detects the latest release of the slug (owner/repo).
 // This function is a shortcut version of updater.DetectLatest() method.
-func DetectLatest(slug string) (*Release, bool, error) {
-	return DefaultUpdater().DetectLatest(slug)
+func DetectLatest(slug string, opts ...Option) (*Release, bool, error) {
+	return DefaultUpdater().DetectLatest(slug, opts...)
 }
 
 // DetectVersion detects the given release of the slug (owner/repo) from its version.
-func DetectVersion(slug string, version string) (*Release, bool, error) {
-	return DefaultUpdater().DetectVersion(slug, version)
+func DetectVersion(slug string, version string, opts ...Option) (*Release, bool, error) {
+	return DefaultUpdater().DetectVersion(slug, version, opts...)
 }
