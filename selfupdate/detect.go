@@ -59,7 +59,7 @@ func findAssetFromRelease(rel *github.RepositoryRelease,
 					matched = true
 					break
 				}
-				log.Printf("Skipping asset %q not matching filter %v", name, filter)
+				log.Printf("Skipping asset %q not matching filter %v\n", name, filter)
 			}
 			if !matched {
 				continue
