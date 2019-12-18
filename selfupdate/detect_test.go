@@ -324,7 +324,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			expectedFound:   true,
 		},
 		{
-			name: "find asset, no filters",
+			name: "find asset, no filters (2)",
 			rels: &github.RepositoryRelease{
 				Name:    &rel11,
 				TagName: &v11,
@@ -449,13 +449,9 @@ func TestFindReleaseAndAsset(t *testing.T) {
 				continue
 			}
 			t.Logf("asset %v, %v", asset, ver)
-		} else {
-			if found {
-				t.Errorf("expected not to find an asset for this fixture: %q, but got: %v", fixture.name, asset)
-			}
+		} else if found {
+			t.Errorf("expected not to find an asset for this fixture: %q, but got: %v", fixture.name, asset)
 		}
 	}
 
 }
-
-//(*github.RepositoryRelease, *github.ReleaseAsset, semver.Version, bool) {
