@@ -112,3 +112,25 @@ func TestECDSAValidatorFail(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestValidatorSuffix(t *testing.T) {
+	for _, test := range []struct {
+		v      Validator
+		suffix string
+	}{
+		{
+			v:      &SHA2Validator{},
+			suffix: ".sha256",
+		},
+		{
+			v:      &ECDSAValidator{},
+			suffix: ".sig",
+		},
+	} {
+		want := test.suffix
+		got := test.v.Suffix()
+		if want != got {
+			t.Errorf("Wanted %q but got %q", want, got)
+		}
+	}
+}
