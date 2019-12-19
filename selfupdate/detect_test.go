@@ -3,10 +3,12 @@ package selfupdate
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/blang/semver"
+	"github.com/google/go-github/github"
 )
 
 func TestDetectReleaseWithVersionPrefix(t *testing.T) {
@@ -239,4 +241,217 @@ func TestDetectFromGitHubEnterpriseRepo(t *testing.T) {
 	if !r.Version.Equals(semver.MustParse("1.2.3")) {
 		t.Error("")
 	}
+}
+
+func TestFindReleaseAndAsset(t *testing.T) {
+	EnableLog()
+	type findReleaseAndAssetFixture struct {
+		name            string
+		rels            *github.RepositoryRelease
+		targetVersion   string
+		filters         []*regexp.Regexp
+		expectedAsset   string
+		expectedVersion string
+		expectedFound   bool
+	}
+
+	rel1 := "rel1"
+	v1 := "1.0.0"
+	rel11 := "rel11"
+	v11 := "1.1.0"
+	asset1 := "asset1.gz"
+	asset2 := "asset2.gz"
+	wrongAsset1 := "asset1.yaml"
+	asset11 := "asset11.gz"
+	url1 := "https://asset1"
+	url2 := "https://asset2"
+	url11 := "https://asset11"
+	for _, fixture := range []findReleaseAndAssetFixture{
+		{
+			name:          "empty fixture",
+			rels:          nil,
+			targetVersion: "",
+			filters:       nil,
+			expectedFound: false,
+		},
+		{
+			name: "find asset, no filters",
+			rels: &github.RepositoryRelease{
+				Name:    &rel1,
+				TagName: &v1,
+				Assets: []github.ReleaseAsset{
+					{
+						Name: &asset1,
+						URL:  &url1,
+					},
+				},
+			},
+			targetVersion:   "1.0.0",
+			expectedAsset:   asset1,
+			expectedVersion: "1.0.0",
+			expectedFound:   true,
+		},
+		{
+			name: "don't find asset with wrong extension, no filters",
+			rels: &github.RepositoryRelease{
+				Name:    &rel11,
+				TagName: &v11,
+				Assets: []github.ReleaseAsset{
+					{
+						Name: &wrongAsset1,
+						URL:  &url11,
+					},
+				},
+			},
+			targetVersion: "1.1.0",
+			expectedFound: false,
+		},
+		{
+			name: "find asset with different name, no filters",
+			rels: &github.RepositoryRelease{
+				Name:    &rel11,
+				TagName: &v11,
+				Assets: []github.ReleaseAsset{
+					{
+						Name: &asset1,
+						URL:  &url11,
+					},
+				},
+			},
+			targetVersion:   "1.1.0",
+			expectedAsset:   asset1,
+			expectedVersion: "1.1.0",
+			expectedFound:   true,
+		},
+		{
+			name: "find asset, no filters (2)",
+			rels: &github.RepositoryRelease{
+				Name:    &rel11,
+				TagName: &v11,
+				Assets: []github.ReleaseAsset{
+					{
+						Name: &asset11,
+						URL:  &url11,
+					},
+				},
+			},
+			targetVersion:   "1.1.0",
+			expectedAsset:   asset11,
+			expectedVersion: "1.1.0",
+			filters:         nil,
+			expectedFound:   true,
+		},
+		{
+			name: "find asset, match filter",
+			rels: &github.RepositoryRelease{
+				Name:    &rel11,
+				TagName: &v11,
+				Assets: []github.ReleaseAsset{
+					{
+						Name: &asset11,
+						URL:  &url11,
+					},
+					{
+						Name: &asset1,
+						URL:  &url1,
+					},
+				},
+			},
+			targetVersion:   "1.1.0",
+			filters:         []*regexp.Regexp{regexp.MustCompile("11")},
+			expectedAsset:   asset11,
+			expectedVersion: "1.1.0",
+			expectedFound:   true,
+		},
+		{
+			name: "find asset, match another filter",
+			rels: &github.RepositoryRelease{
+				Name:    &rel11,
+				TagName: &v11,
+				Assets: []github.ReleaseAsset{
+					{
+						Name: &asset11,
+						URL:  &url11,
+					},
+					{
+						Name: &asset1,
+						URL:  &url1,
+					},
+				},
+			},
+			targetVersion:   "1.1.0",
+			filters:         []*regexp.Regexp{regexp.MustCompile("([^1])1{1}([^1])")},
+			expectedAsset:   asset1,
+			expectedVersion: "1.1.0",
+			expectedFound:   true,
+		},
+		{
+			name: "find asset, match any filter",
+			rels: &github.RepositoryRelease{
+				Name:    &rel11,
+				TagName: &v11,
+				Assets: []github.ReleaseAsset{
+					{
+						Name: &asset11,
+						URL:  &url11,
+					},
+					{
+						Name: &asset2,
+						URL:  &url2,
+					},
+				},
+			},
+			targetVersion: "1.1.0",
+			filters: []*regexp.Regexp{
+				regexp.MustCompile("([^1])1{1}([^1])"),
+				regexp.MustCompile("([^1])2{1}([^1])"),
+			},
+			expectedAsset:   asset2,
+			expectedVersion: "1.1.0",
+			expectedFound:   true,
+		},
+		{
+			name: "find asset, match no filter",
+			rels: &github.RepositoryRelease{
+				Name:    &rel11,
+				TagName: &v11,
+				Assets: []github.ReleaseAsset{
+					{
+						Name: &asset11,
+						URL:  &url11,
+					},
+					{
+						Name: &asset2,
+						URL:  &url2,
+					},
+				},
+			},
+			targetVersion: "1.1.0",
+			filters: []*regexp.Regexp{
+				regexp.MustCompile("another"),
+				regexp.MustCompile("binary"),
+			},
+			expectedFound: false,
+		},
+	} {
+		asset, ver, found := findAssetFromRelease(fixture.rels, []string{".gz"}, fixture.targetVersion, fixture.filters)
+		if fixture.expectedFound {
+			if !found {
+				t.Errorf("expected to find an asset for this fixture: %q", fixture.name)
+				continue
+			}
+			if asset.Name == nil {
+				t.Errorf("invalid asset struct returned from fixture: %q, got: %v", fixture.name, asset)
+				continue
+			}
+			if *asset.Name != fixture.expectedAsset {
+				t.Errorf("expected asset %q in fixture: %q, got: %s", fixture.expectedAsset, fixture.name, *asset.Name)
+				continue
+			}
+			t.Logf("asset %v, %v", asset, ver)
+		} else if found {
+			t.Errorf("expected not to find an asset for this fixture: %q, but got: %v", fixture.name, asset)
+		}
+	}
+
 }
