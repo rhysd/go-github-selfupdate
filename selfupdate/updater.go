@@ -2,6 +2,7 @@ package selfupdate
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"regexp"
@@ -61,9 +62,9 @@ func NewUpdater(config Config) (*Updater, error) {
 
 	filtersRe := make([]*regexp.Regexp, 0, len(config.Filters))
 	for _, filter := range config.Filters {
-		re, erx := regexp.Compile(filter)
-		if erx != nil {
-			return nil, erx
+		re, err := regexp.Compile(filter)
+		if err != nil {
+			return nil, fmt.Errorf("Could not compile regular expression %q for filtering releases: %v", filter, err)
 		}
 		filtersRe = append(filtersRe, re)
 	}
