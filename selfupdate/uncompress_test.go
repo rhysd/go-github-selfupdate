@@ -44,6 +44,7 @@ func TestUncompress(t *testing.T) {
 		"testdata/single-file.gz",
 		"testdata/single-file.gzip",
 		"testdata/foo.tar.gz",
+		"testdata/foo.tgz",
 		"testdata/foo.tar.xz",
 		"testdata/single-file.xz",
 	} {
