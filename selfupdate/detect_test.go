@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/blang/semver"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
 )
 
 func TestDetectReleaseWithVersionPrefix(t *testing.T) {
@@ -279,7 +279,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			rels: &github.RepositoryRelease{
 				Name:    &rel1,
 				TagName: &v1,
-				Assets: []github.ReleaseAsset{
+				Assets: []*github.ReleaseAsset{
 					{
 						Name: &asset1,
 						URL:  &url1,
@@ -296,7 +296,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			rels: &github.RepositoryRelease{
 				Name:    &rel11,
 				TagName: &v11,
-				Assets: []github.ReleaseAsset{
+				Assets: []*github.ReleaseAsset{
 					{
 						Name: &wrongAsset1,
 						URL:  &url11,
@@ -311,7 +311,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			rels: &github.RepositoryRelease{
 				Name:    &rel11,
 				TagName: &v11,
-				Assets: []github.ReleaseAsset{
+				Assets: []*github.ReleaseAsset{
 					{
 						Name: &asset1,
 						URL:  &url11,
@@ -328,7 +328,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			rels: &github.RepositoryRelease{
 				Name:    &rel11,
 				TagName: &v11,
-				Assets: []github.ReleaseAsset{
+				Assets: []*github.ReleaseAsset{
 					{
 						Name: &asset11,
 						URL:  &url11,
@@ -346,7 +346,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			rels: &github.RepositoryRelease{
 				Name:    &rel11,
 				TagName: &v11,
-				Assets: []github.ReleaseAsset{
+				Assets: []*github.ReleaseAsset{
 					{
 						Name: &asset11,
 						URL:  &url11,
@@ -368,7 +368,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			rels: &github.RepositoryRelease{
 				Name:    &rel11,
 				TagName: &v11,
-				Assets: []github.ReleaseAsset{
+				Assets: []*github.ReleaseAsset{
 					{
 						Name: &asset11,
 						URL:  &url11,
@@ -390,7 +390,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			rels: &github.RepositoryRelease{
 				Name:    &rel11,
 				TagName: &v11,
-				Assets: []github.ReleaseAsset{
+				Assets: []*github.ReleaseAsset{
 					{
 						Name: &asset11,
 						URL:  &url11,
@@ -415,7 +415,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			rels: &github.RepositoryRelease{
 				Name:    &rel11,
 				TagName: &v11,
-				Assets: []github.ReleaseAsset{
+				Assets: []*github.ReleaseAsset{
 					{
 						Name: &asset11,
 						URL:  &url11,
