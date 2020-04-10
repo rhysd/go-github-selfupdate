@@ -1,13 +1,14 @@
 package selfupdate
 
 import (
-	"github.com/blang/semver"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/blang/semver"
 )
 
 func setupTestBinary() {

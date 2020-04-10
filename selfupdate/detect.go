@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v30/github"
 )
 
 var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
@@ -69,7 +69,7 @@ func findAssetFromRelease(rel *github.RepositoryRelease,
 		for _, s := range suffixes {
 			if strings.HasSuffix(name, s) { // require version, arch etc
 				// default: assume single artifact
-				return &asset, ver, true
+				return asset, ver, true
 			}
 		}
 	}
@@ -81,7 +81,7 @@ func findAssetFromRelease(rel *github.RepositoryRelease,
 func findValidationAsset(rel *github.RepositoryRelease, validationName string) (*github.ReleaseAsset, bool) {
 	for _, asset := range rel.Assets {
 		if asset.GetName() == validationName {
-			return &asset, true
+			return asset, true
 		}
 	}
 	return nil, false
