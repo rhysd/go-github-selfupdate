@@ -1,4 +1,4 @@
-module github.com/creativeprojects/go-github-selfupdate
+module github.com/rhysd/go-github-selfupdate
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
