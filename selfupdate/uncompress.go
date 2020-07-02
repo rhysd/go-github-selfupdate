@@ -6,12 +6,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"github.com/ulikunitz/xz"
 	"io"
 	"io/ioutil"
 	"path/filepath"
-	"runtime"
 	"strings"
+
+	"github.com/ulikunitz/xz"
 )
 
 func matchExecutableName(cmd, target string) bool {
@@ -19,7 +19,7 @@ func matchExecutableName(cmd, target string) bool {
 		return true
 	}
 
-	o, a := runtime.GOOS, runtime.GOARCH
+	o, a := GetOSArch()
 
 	// When the contained executable name is full name (e.g. foo_darwin_amd64),
 	// it is also regarded as a target executable file. (#19)

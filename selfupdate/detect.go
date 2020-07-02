@@ -3,7 +3,6 @@ package selfupdate
 import (
 	"fmt"
 	"regexp"
-	"runtime"
 	"strings"
 
 	"github.com/blang/semver"
@@ -94,10 +93,10 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease,
 	suffixes := make([]string, 0, 2*7*2)
 	for _, sep := range []rune{'_', '-'} {
 		for _, ext := range []string{".zip", ".tar.gz", ".tgz", ".gzip", ".gz", ".tar.xz", ".xz", ""} {
-			suffix := fmt.Sprintf("%s%c%s%s", runtime.GOOS, sep, runtime.GOARCH, ext)
+			suffix := fmt.Sprintf("%s%c%s%s", useOS, sep, useArch, ext)
 			suffixes = append(suffixes, suffix)
-			if runtime.GOOS == "windows" {
-				suffix = fmt.Sprintf("%s%c%s.exe%s", runtime.GOOS, sep, runtime.GOARCH, ext)
+			if useOS == "windows" {
+				suffix = fmt.Sprintf("%s%c%s.exe%s", useOS, sep, useArch, ext)
 				suffixes = append(suffixes, suffix)
 			}
 		}
@@ -123,7 +122,7 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease,
 	}
 
 	if release == nil {
-		log.Println("Could not find any release for", runtime.GOOS, "and", runtime.GOARCH)
+		log.Println("Could not find any release for", useOS, "and", useArch)
 		return nil, nil, semver.Version{}, false
 	}
 
