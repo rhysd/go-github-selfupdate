@@ -8,6 +8,7 @@ require (
 	github.com/onsi/gomega v1.4.2 // indirect
 	github.com/tcnksm/go-gitconfig v0.1.2
 	github.com/ulikunitz/xz v0.5.9
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
 	golang.org/x/oauth2 v0.0.0-20181106182150-f42d05182288
 	google.golang.org/appengine v1.3.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
