@@ -1,4 +1,10 @@
-## [Unreleased]
+## [v1.2.3] - 2021-01-13
+
+- Fix security issues in dependencies; CVE-2020-16845, CVE-2019-11840, CVE-2020-14040 (Thanks to [@bhamail](https://github.com/bhamail)).
+
+## [v1.2.2] - 2020-04-10
+
+- Update `go-github` dependency to v30.1.0
 
 ## [v1.2.1] - 2019-12-19
 
@@ -26,7 +32,8 @@
 First release! :tada:
 
 
-[Unreleased]: https://github.com/rhysd/go-github-selfupdate/compare/v1.2.1...HEAD
+[v1.2.3]: https://github.com/rhysd/go-github-selfupdate/compare/v1.2.2...v1.2.3
+[v1.2.2]: https://github.com/rhysd/go-github-selfupdate/compare/v1.2.1...v1.2.2
 [v1.2.1]: https://github.com/rhysd/go-github-selfupdate/compare/v1.2.0...v1.2.1
 [v1.2.0]: https://github.com/rhysd/go-github-selfupdate/compare/go-get-release...v1.2.0
 [v1.1.0]: https://github.com/rhysd/go-github-selfupdate/compare/v1.0.0...v1.1.0
