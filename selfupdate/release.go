@@ -10,6 +10,10 @@ import (
 type Release struct {
 	// Version is the version of the release
 	Version semver.Version
+	// PreRelease is the pre-release flag of the release
+	PreRelease bool
+	// Draft is the draft flag of the release
+	Draft bool
 	// AssetURL is a URL to the uploaded file for the release
 	AssetURL string
 	// AssetSize represents the size of asset in bytes
