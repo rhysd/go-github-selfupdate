@@ -19,6 +19,8 @@ type Updater struct {
 	apiCtx    context.Context
 	validator Validator
 	filters   []*regexp.Regexp
+	pre       bool
+	draft     bool
 }
 
 // Config represents the configuration of self-update.
@@ -37,6 +39,10 @@ type Config struct {
 	// An asset is selected if it matches any of those, in addition to the regular tag, os, arch, extensions.
 	// Please make sure that your filter(s) uniquely match an asset.
 	Filters []string
+	// PreRelease indicates if pre-releases are allowed.
+	PreRelease bool
+	// Draft indicates if drafts are allowed.
+	Draft bool
 }
 
 func newHTTPClient(ctx context.Context, token string) *http.Client {
@@ -71,7 +77,7 @@ func NewUpdater(config Config) (*Updater, error) {
 
 	if config.EnterpriseBaseURL == "" {
 		client := github.NewClient(hc)
-		return &Updater{api: client, apiCtx: ctx, validator: config.Validator, filters: filtersRe}, nil
+		return &Updater{api: client, apiCtx: ctx, validator: config.Validator, filters: filtersRe, pre: config.PreRelease, draft: config.Draft}, nil
 	}
 
 	u := config.EnterpriseUploadURL
@@ -82,7 +88,7 @@ func NewUpdater(config Config) (*Updater, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Updater{api: client, apiCtx: ctx, validator: config.Validator, filters: filtersRe}, nil
+	return &Updater{api: client, apiCtx: ctx, validator: config.Validator, filters: filtersRe, pre: config.PreRelease, draft: config.Draft}, nil
 }
 
 // DefaultUpdater creates a new updater instance with default configuration.

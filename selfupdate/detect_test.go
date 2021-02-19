@@ -434,7 +434,7 @@ func TestFindReleaseAndAsset(t *testing.T) {
 			expectedFound: false,
 		},
 	} {
-		asset, ver, found := findAssetFromRelease(fixture.rels, []string{".gz"}, fixture.targetVersion, fixture.filters)
+		asset, ver, found := findAssetFromRelease(fixture.rels, []string{".gz"}, fixture.targetVersion, fixture.filters, options{})
 		if fixture.expectedFound {
 			if !found {
 				t.Errorf("expected to find an asset for this fixture: %q", fixture.name)
