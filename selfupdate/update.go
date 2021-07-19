@@ -15,9 +15,11 @@ import (
 	"github.com/inconshreveable/go-update"
 )
 
-func uncompressAndUpdate(src io.Reader, assetURL, cmdPath string) error {
-	_, cmd := filepath.Split(cmdPath)
-	asset, err := UncompressCommand(src, assetURL, cmd)
+func uncompressAndUpdate(src io.Reader, assetURL, cmdPath string, binaryName string) error {
+	if binaryName == "" {
+		_, binaryName = filepath.Split(cmdPath)
+	}
+	asset, err := UncompressCommand(src, assetURL, binaryName)
 	if err != nil {
 		return err
 	}
@@ -76,7 +78,7 @@ func (up *Updater) UpdateTo(rel *Release, cmdPath string) error {
 	}
 
 	if up.validator == nil {
-		return uncompressAndUpdate(bytes.NewReader(data), rel.AssetURL, cmdPath)
+		return uncompressAndUpdate(bytes.NewReader(data), rel.AssetURL, cmdPath, up.binaryName)
 	}
 
 	validationSrc, validationRedirectURL, err := up.api.Repositories.DownloadReleaseAsset(up.apiCtx, rel.RepoOwner, rel.RepoName, rel.ValidationAssetID, &client)
@@ -102,7 +104,7 @@ func (up *Updater) UpdateTo(rel *Release, cmdPath string) error {
 		return fmt.Errorf("Failed validating asset content: %v", err)
 	}
 
-	return uncompressAndUpdate(bytes.NewReader(data), rel.AssetURL, cmdPath)
+	return uncompressAndUpdate(bytes.NewReader(data), rel.AssetURL, cmdPath, up.binaryName)
 }
 
 // UpdateCommand updates a given command binary to the latest version.
@@ -165,7 +167,7 @@ func UpdateTo(assetURL, cmdPath string) error {
 		return err
 	}
 	defer src.Close()
-	return uncompressAndUpdate(src, assetURL, cmdPath)
+	return uncompressAndUpdate(src, assetURL, cmdPath, up.binaryName)
 }
 
 // UpdateCommand updates a given command binary to the latest version.
