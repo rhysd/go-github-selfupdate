@@ -11,16 +11,34 @@ import (
 	"github.com/blang/semver"
 )
 
-func setupTestBinary() {
-	if err := exec.Command("go", "build", "./testdata/github-release-test/").Run(); err != nil {
+func setupTestBinary(name ...string) {
+	var options []string
+	var output string
+	if len(name) == 0 {
+		options = []string{"build", "./testdata/github-release-test/"}
+	} else {
+		output = name[0]
+		if runtime.GOOS == "windows" {
+			output += ".exe"
+		}
+		options = []string{"build", "-o", output, "./testdata/github-release-test/"}
+	}
+
+	if err := exec.Command("go", options...).Run(); err != nil {
 		panic(err)
 	}
 }
 
-func teardownTestBinary() {
-	bin := "github-release-test"
+func teardownTestBinary(name ...string) {
+	var bin string
+	if len(name) == 0 {
+		bin = "github-release-test"
+	} else {
+		bin = name[0]
+	}
+
 	if runtime.GOOS == "windows" {
-		bin = "github-release-test.exe"
+		bin += ".exe"
 	}
 	if err := os.Remove(bin); err != nil {
 		panic(err)
@@ -61,6 +79,41 @@ func TestUpdateCommand(t *testing.T) {
 				t.Error("Output from test binary after update is unexpected:", out)
 			}
 		})
+	}
+}
+
+func TestUpdateWithDifferentBinaryName(t *testing.T) {
+	setupTestBinary("gh-release-test")
+	defer teardownTestBinary("gh-release-test")
+	latest := semver.MustParse("1.2.3")
+	prev := semver.MustParse("1.2.2")
+
+	_, err := UpdateCommand("gh-release-test", prev, "rhysd-test/test-release-zip")
+	if err == nil {
+		t.Fatal("Error should occur for broken package")
+	}
+	if !strings.Contains(err.Error(), "the command is not found") {
+		t.Fatal("Unexpected error:", err)
+	}
+
+	up, err := NewUpdater(Config{BinaryName: "github-release-test", Filters: []string{"github-release-test"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rel, err := up.UpdateCommand("gh-release-test", prev, "rhysd-test/test-release-zip")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rel.Version.NE(latest) {
+		t.Error("Version is not latest", rel.Version)
+	}
+	bytes, err := exec.Command(filepath.FromSlash("./gh-release-test")).Output()
+	if err != nil {
+		t.Fatal("Failed to run test binary after update:", err)
+	}
+	out := string(bytes)
+	if out != "v1.2.3\n" {
+		t.Error("Output from test binary after update is unexpected:", out)
 	}
 }
 

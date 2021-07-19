@@ -15,10 +15,11 @@ import (
 // Updater is responsible for managing the context of self-update.
 // It contains GitHub client and its context.
 type Updater struct {
-	api       *github.Client
-	apiCtx    context.Context
-	validator Validator
-	filters   []*regexp.Regexp
+	api        *github.Client
+	apiCtx     context.Context
+	validator  Validator
+	filters    []*regexp.Regexp
+	binaryName string
 }
 
 // Config represents the configuration of self-update.
@@ -37,6 +38,10 @@ type Config struct {
 	// An asset is selected if it matches any of those, in addition to the regular tag, os, arch, extensions.
 	// Please make sure that your filter(s) uniquely match an asset.
 	Filters []string
+
+	// BinaryName represents the name of the binary extracted from the archive downloaded from GitHub.
+	// If unset, the current executable's name will be used to match.
+	BinaryName string
 }
 
 func newHTTPClient(ctx context.Context, token string) *http.Client {
@@ -71,7 +76,7 @@ func NewUpdater(config Config) (*Updater, error) {
 
 	if config.EnterpriseBaseURL == "" {
 		client := github.NewClient(hc)
-		return &Updater{api: client, apiCtx: ctx, validator: config.Validator, filters: filtersRe}, nil
+		return &Updater{api: client, apiCtx: ctx, validator: config.Validator, filters: filtersRe, binaryName: config.BinaryName}, nil
 	}
 
 	u := config.EnterpriseUploadURL
@@ -82,7 +87,8 @@ func NewUpdater(config Config) (*Updater, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Updater{api: client, apiCtx: ctx, validator: config.Validator, filters: filtersRe}, nil
+
+	return &Updater{api: client, apiCtx: ctx, validator: config.Validator, filters: filtersRe, binaryName: config.BinaryName}, nil
 }
 
 // DefaultUpdater creates a new updater instance with default configuration.
