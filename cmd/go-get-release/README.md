@@ -14,7 +14,7 @@ $ go-get-release {package}
 ```
 
 Please note that this command assumes that specified package is following Git tag naming rules and
-released binaries naming rules described in [README](../../README.md).
+released binaries naming rules described in [README](../../README.md#naming-rules-of-released-binaries).
 
 For example, following command downloads and installs the released binary of [ghr](https://github.com/tcnksm/ghr)
 to `$GOPATH/bin`.
