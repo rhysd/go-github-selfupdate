@@ -3,7 +3,7 @@ package selfupdate
 import (
 	"time"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 )
 
 // Release represents a release asset for current OS and arch.
