@@ -97,3 +97,12 @@ func DefaultUpdater() *Updater {
 	client := newHTTPClient(ctx, token)
 	return &Updater{api: github.NewClient(client), apiCtx: ctx}
 }
+
+// NoGitUpdater is like DefaultUpdater but doesn't launch `git` to query
+// for your GitHub token if not provided
+func NoGitUpdater() *Updater {
+	token := os.Getenv("GITHUB_TOKEN")
+	ctx := context.Background()
+	client := newHTTPClient(ctx, token)
+	return &Updater{api: github.NewClient(client), apiCtx: ctx}
+}
