@@ -100,6 +100,9 @@ func findReleaseAndAsset(rels []*github.RepositoryRelease,
 				suffix = fmt.Sprintf("%s%c%s.exe%s", runtime.GOOS, sep, runtime.GOARCH, ext)
 				suffixes = append(suffixes, suffix)
 			}
+			if runtime.GOOS == "darwin" {
+				suffixes = append(suffixes, fmt.Sprintf("%s%c%s%s", "macOS", sep, runtime.GOARCH, ext))
+			}
 		}
 	}
 
