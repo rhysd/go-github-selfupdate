@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/rhysd/go-github-selfupdate/selfupdate"
+	"github.com/wtrocki/go-github-selfupdate/selfupdate"
 	"go/build"
 	"io"
 	"net/http"

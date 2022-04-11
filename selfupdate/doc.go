@@ -23,16 +23,16 @@ If newer version than itself is detected, it downloads released binary from GitH
 There are some naming rules. Please read following links.
 
 Naming Rules of Released Binaries:
-  https://github.com/rhysd/go-github-selfupdate#naming-rules-of-released-binaries
+  https://github.com/wtrocki/go-github-selfupdate#naming-rules-of-released-binaries
 
 Naming Rules of Git Tags:
-  https://github.com/rhysd/go-github-selfupdate#naming-rules-of-git-tags
+  https://github.com/wtrocki/go-github-selfupdate#naming-rules-of-git-tags
 
 This package is hosted on GitHub:
-  https://github.com/rhysd/go-github-selfupdate
+  https://github.com/wtrocki/go-github-selfupdate
 
 Small CLI tools as wrapper of this library are available also:
-  https://github.com/rhysd/go-github-selfupdate/cmd/detect-latest-release
-  https://github.com/rhysd/go-github-selfupdate/cmd/go-get-release
+  https://github.com/wtrocki/go-github-selfupdate/cmd/detect-latest-release
+  https://github.com/wtrocki/go-github-selfupdate/cmd/go-get-release
 */
 package selfupdate
