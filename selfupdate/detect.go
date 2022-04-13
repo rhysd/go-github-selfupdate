@@ -89,19 +89,26 @@ func findValidationAsset(rel *github.RepositoryRelease, validationName string) (
 
 func findReleaseAndAsset(rels []*github.RepositoryRelease,
 	targetVersion string,
-	filters []*regexp.Regexp) (*github.RepositoryRelease, *github.ReleaseAsset, semver.Version, bool) {
+	filters []*regexp.Regexp,
+	suffix string) (*github.RepositoryRelease, *github.ReleaseAsset, semver.Version, bool) {
 	// Generate candidates
-	suffixes := make([]string, 0, 2*7*2)
-	for _, sep := range []rune{'_', '-'} {
-		for _, ext := range []string{".zip", ".tar.gz", ".tgz", ".gzip", ".gz", ".tar.xz", ".xz", ""} {
-			suffix := fmt.Sprintf("%s%c%s%s", runtime.GOOS, sep, runtime.GOARCH, ext)
-			suffixes = append(suffixes, suffix)
-			if runtime.GOOS == "windows" {
-				suffix = fmt.Sprintf("%s%c%s.exe%s", runtime.GOOS, sep, runtime.GOARCH, ext)
+	suffixes := func() []string {
+		if suffix != "" {
+			return []string{suffix}
+		}
+		suffixes := make([]string, 0, 2*7*2)
+		for _, sep := range []rune{'_', '-'} {
+			for _, ext := range []string{".zip", ".tar.gz", ".tgz", ".gzip", ".gz", ".tar.xz", ".xz", ""} {
+				suffix := fmt.Sprintf("%s%c%s%s", runtime.GOOS, sep, runtime.GOARCH, ext)
 				suffixes = append(suffixes, suffix)
+				if runtime.GOOS == "windows" {
+					suffix = fmt.Sprintf("%s%c%s.exe%s", runtime.GOOS, sep, runtime.GOARCH, ext)
+					suffixes = append(suffixes, suffix)
+				}
 			}
 		}
-	}
+		return suffixes
+	}()
 
 	var ver semver.Version
 	var asset *github.ReleaseAsset
@@ -159,7 +166,7 @@ func (up *Updater) DetectVersion(slug string, version string) (release *Release,
 		return nil, false, err
 	}
 
-	rel, asset, ver, found := findReleaseAndAsset(rels, version, up.filters)
+	rel, asset, ver, found := findReleaseAndAsset(rels, version, up.filters, up.suffix)
 	if !found {
 		return nil, false, nil
 	}
