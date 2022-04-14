@@ -38,7 +38,26 @@ type Config struct {
 	// An asset is selected if it matches any of those, in addition to the regular tag, os, arch, extensions.
 	// Please make sure that your filter(s) uniquely match an asset.
 	Filters []string
-	Suffix  string
+	// self-update assumes that released binaries are in this format: {cmd}_{goos}_{goarch}{.ext}, where
+	// {cmd} is the name of command, and
+	// {goos} and {arch} are the platform and the architecture, and
+	// {.ext} is the file extension.
+	// should you want to deviate from the above format, you can do so with Suffix, for example:
+	//   updater, err := selfupdate.NewUpdater(selfupdate.Config{
+	// 	   Suffix: func() string {
+	//       if runtime.GOOS == "windows" {
+	//         return fmt.Sprintf("Win%s.exe", func() string {
+	//           if runtime.GOARCH == "386" {
+	//             return "32"
+	//           } else {
+	//             return "64"
+	//           }
+	//         }())
+	//       }
+	//       return fmt.Sprintf("macOS-%s", runtime.GOARCH)
+	//    }(),
+	//   })
+	Suffix string
 }
 
 func newHTTPClient(ctx context.Context, token string) *http.Client {
