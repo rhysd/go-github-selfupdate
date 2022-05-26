@@ -169,7 +169,7 @@ func confirmAndSelfUpdate() {
         log.Println("Could not locate executable path")
         return
     }
-    if err := selfupdate.UpdateTo(latest.AssetURL, exe); err != nil {
+    if err := selfupdate.UpdateTo(latest, exe); err != nil {
         log.Println("Error occurred while updating binary:", err)
         return
     }
