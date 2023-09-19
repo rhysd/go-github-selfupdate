@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/blang/semver"
+	"github.com/google/go-github/v30/github"
 )
 
 // Release represents a release asset for current OS and arch.
@@ -30,4 +31,24 @@ type Release struct {
 	RepoOwner string
 	// RepoName is the name of the repository of the release
 	RepoName string
+}
+
+func newRelease(repo *repoInfo, release *github.RepositoryRelease,
+	asset *github.ReleaseAsset, version *semver.Version) *Release {
+
+	publishedAt := release.GetPublishedAt().Time
+
+	return &Release{
+		Version:           *version,
+		AssetURL:          asset.GetBrowserDownloadURL(),
+		AssetByteSize:     asset.GetSize(),
+		AssetID:           asset.GetID(),
+		ValidationAssetID: -1,
+		URL:               release.GetHTMLURL(),
+		ReleaseNotes:      release.GetBody(),
+		Name:              release.GetName(),
+		PublishedAt:       &publishedAt,
+		RepoOwner:         repo.owner,
+		RepoName:          repo.name,
+	}
 }
